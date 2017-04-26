@@ -3,7 +3,7 @@ var request = require('request');
 
 var connector = new builder.ConsoleConnector().listen();
 var bot = new builder.UniversalBot(connector);
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/0461769f-c4f5-4ed2-9136-c10d96b45fee?subscription-key=96d95462721b41629fed437056c857c6&verbose=true&q=';
+var model = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/0461769f-c4f5-4ed2-9136-c10d96b45fee?subscription-key=dc1450cd278c47b8b3a9fa8a418c00d6&timezoneOffset=720&verbose=true&q=";
 var recognizer = new builder.LuisRecognizer(model);
 var intents = new builder.IntentDialog({
 		recognizers: [recognizer]
@@ -18,11 +18,13 @@ intents.matches("getWeather", [
 				if (!where) {
 						session.send("Where abouts?");
 				} else if (!when) {
-						session.send("I'll find the weather for now, soon and tomorrow. If your interested in a particular date or time this week let me know!");
-						request('http://api.openweathermap.org/data/2.5/weather?q='+where.entity+'&appid=046f7aa35da64fc84874ffbe8add703a', function (error, response, body) {
-						  console.log('error:', error); // Print the error if one occurred
-						  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-						  console.log('body:', body); // Print the HTML for the Google homepage.
+						request('http://api.openweathermap.org/data/2.5/weather?q='+where.entity+'&appid=046f7aa35da64fc84874ffbe8add703a&units=metric', function (error, response, body) {
+							if (response.statusCode != 200){
+								session.send("Sorry something went wrong currently I only support cities.");
+							}else{
+								var weather = JSON.parse(body);
+								session.send(`Currently in ${where.entity}: Experiencing ${weather['weather'][0]['description']} and a temperature of ${weather['main']['temp']}.`);
+							}
 						});
 				}
 				 if (where && when) {
