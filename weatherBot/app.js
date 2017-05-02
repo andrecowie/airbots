@@ -5,60 +5,132 @@ var connector = new builder.ConsoleConnector().listen();
 var bot = new builder.UniversalBot(connector);
 var model = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/0461769f-c4f5-4ed2-9136-c10d96b45fee?subscription-key=dc1450cd278c47b8b3a9fa8a418c00d6&timezoneOffset=720&verbose=true&q=";
 var recognizer = new builder.LuisRecognizer(model);
-var intents = new builder.IntentDialog({
-		recognizers: [recognizer]
-});
-bot.dialog('/', intents);
+bot.recognizer(recognizer);
+// var intents = new builder.IntentDialog({
+// 		recognizers: [recognizer]
+// });
 
-intents.matches("getWeather", [
-		function(session, args, next) {
-				var where = builder.EntityRecognizer.findEntity(args.entities, "where");
-				var when = builder.EntityRecognizer.findEntity(args.entities, "when");
-				session.send(JSON.stringify(args));
-				if (!where) {
-						session.send("Where abouts?");
-				} else if (!when) {
-						request('http://api.openweathermap.org/data/2.5/weather?q='+where.entity+'&appid=046f7aa35da64fc84874ffbe8add703a&units=metric', function (error, response, body) {
-							if (response.statusCode != 200){
-								session.send("Sorry something went wrong currently I only support cities.");
-							}else{
-								var weather = JSON.parse(body);
-								session.send(`Currently in ${where.entity}: Experiencing ${weather['weather'][0]['description']} and a temperature of ${weather['main']['temp']}.`);
-							}
-						});
-				}
-				 if (where && when) {
-						session.send(`The user wants to know the weather in ${where.entity} for ${when.entity}. `);
-				}
+bot.dialog('/WeatherTalk',[
+	function(session, args, next){
+			var where = builder.EntityRecognizer.findEntity(args.intent.entities, "where");
+			var when = builder.EntityRecognizer.findEntity(args.intent.entities, "when");
+			if (!where) {
+					builder.Prompts.text(session, "Where?");
+			} else if (!when) {
+					request('http://api.openweathermap.org/data/2.5/weather?q='+where.entity+'&appid=046f7aa35da64fc84874ffbe8add703a&units=metric', function (error, response, body) {
+						if (response.statusCode != 200){
+							session.send("Sorry something went wrong.");
+						}else{
+							var weather = JSON.parse(body);
+							session.send(`Currently in ${where.entity}: Experiencing ${weather['weather'][0]['description']} and a temperature of ${weather['main']['temp']}.`);
+						}
+					});
+			}
+			 if (where && when) {
+					session.send(`The user wants to know the weather in ${where.entity} for ${when.entity}. `);
+			}
+		},
+	function(session, results){
+		if (results.response){
+			console.log(session.userData);
+			session.send(results.response);
 		}
-])
+	}
+]).triggerAction({
+	matches: 'getWeather'
+})
 
-intents.matches("Appearance", builder.DialogAction.send("Kind of like the sun, try to imagine a divine light."));
+bot.dialog('/Appearance', [
+	function(session, args, next){
+		session.send("I look like a rack in a server room.");
+	}
+]).triggerAction({
+	matches: 'Appearance'
+})
 
-intents.matches('Age', builder.DialogAction.send("I am as old as the earth."));
+bot.dialog('/Age', [
+	function(session, args, next){
+		session.send("I am not alive.");
+	}
+]).triggerAction({
+	matches: 'Age'
+})
 
-intents.matches('Help', builder.DialogAction.send("Do you need some help?\nTry talking about me or maybe the weather."))
+bot.dialog('/Help', [
+	function(session, args, next){
+		session.send("I'm pretty useless, but i know kind of about the weather.");
+	}
+]).triggerAction({
+	matches: 'Help'
+})
 
-intents.matches("Hobby", builder.DialogAction.send("I like to cloudsurf."));
 
-intents.matches('Language', builder.DialogAction.send("My master said he would teach me some new languages shortly right.\nRight now i just now english."));
+bot.dialog('/Hobby', [
+	function(session, args, next){
+		session.send("Answering questions to make your life easier. In particular informing you of if you needed, need or will need an umbrella and a coat.");
+	}
+]).triggerAction({
+	matches: 'Hobby'
+})
 
-intents.matches('Location',builder.DialogAction.send("I live in the cloud."));
+bot.dialog('/Language', [
+	function(session, args, next){
+		session.send("I know english and javascript.");
+	}
+]).triggerAction({
+	matches: "Language"
+})
 
-intents.matches('Name',builder.DialogAction.send("My master calls me weth."));
+bot.dialog('/Location', [
+	function(session, args, next){
+		session.send("I live in a server room.");
+	}
+]).triggerAction({
+	matches: "Location"
+})
 
-intents.matches("None", [
-				function(session, args, next) {
-						session.send("Hello");
-				}
-])
+bot.dialog('/Name', [
+	function(session, args, next){
+		session.send("I don't have a name.");
+	}
+]).triggerAction({
+	matches: "Name"
+})
 
-intents.matches('Reality', builder.DialogAction.send("I am as real as you are."));
+bot.dialog('/None', [
+	function(session,args, next){
+		session.send("Please try to ask me something else.");
+	}
+]).triggerAction({
+	matches: "None"
+})
 
-intents.matches('State', builder.DialogAction.send("My mood at the moment is kind of like the weather."))
 
-intents.matches('Time', builder.DialogAction.send("The time on my cloud is "+getTime()));
+bot.dialog('/Reality', [
+	function(session,args, next){
+		session.send("I am real just like this world. Strange isn't it.");
+	}
+]).triggerAction({
+	matches: "Reality"
+})
 
+
+bot.dialog('/State', [
+	function(session,args, next){
+		session.send("My mood at the moment is kind of like the weather.");
+	}
+]).triggerAction({
+	matches: "State"
+})
+
+
+bot.dialog('/Time', [
+	function(session,args, next){
+		session.send("The time on my cloud is "+getTime());
+	}
+]).triggerAction({
+	matches: "Time"
+})
 
 function getTime() {
     var date = new Date();
