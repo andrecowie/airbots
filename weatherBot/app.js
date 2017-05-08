@@ -22,7 +22,7 @@ bot.dialog('/WeatherTalk',[
 							session.send("Sorry something went wrong.");
 						}else{
 							var weather = JSON.parse(body);
-							session.send(`Currently in ${where.entity}: Experiencing ${weather['weather'][0]['description']} and a temperature of ${weather['main']['temp']}.`);
+							session.send(`Currently in ${where.entity} ${(session.userData.itsname != undefined ? session.userData.itsname : "")}: Experiencing ${weather['weather'][0]['description']} and a temperature of ${weather['main']['temp']}.`);
 						}
 					});
 			}
@@ -30,10 +30,10 @@ bot.dialog('/WeatherTalk',[
 					session.send(`The user wants to know the weather in ${where.entity} for ${when.entity}. `);
 			}
 		},
-	function(session, results){
-		if (results.response){
+	function(session, result){
+		if (result.response){
 			console.log(session.userData);
-			session.send(results.response);
+			session.send(result.response);
 		}
 	}
 ]).triggerAction({
@@ -46,6 +46,43 @@ bot.dialog('/Appearance', [
 	}
 ]).triggerAction({
 	matches: 'Appearance'
+})
+
+bot.dialog('/Grace', [
+	function(session, args, next){
+		if(session.userData.itsname){
+			session.send(`So gracious ${session.userData.itsname}.`);
+		}else{
+			builder.Prompts.text(session, "Hey whats your name?");
+		}
+	},
+	function(session, results){
+	if(results.response){
+		session.send(`Nice to meet you ${results.response}`);
+		session.userData.itsname = results.response;
+	}
+	}
+]).triggerAction({
+	matches: 'Grace'
+})
+
+bot.dialog('/Welcome',[
+	function(session, args,next){
+		if (session.userData.myname){
+			session.send(`Hello I'm ${session.userData.myname}.`);
+		}else{
+			builder.Prompts.text(session, "Hello give me a name.");
+		}
+	},
+	function(session, results){
+		if(results.response){
+			session.send(`I don't know if I like the name ${results.response}.`);
+			session.userData.myname = results.response;
+		}
+
+	}
+]).triggerAction({
+	matches: 'Welcome'
 })
 
 bot.dialog('/Age', [
@@ -83,7 +120,7 @@ bot.dialog('/Language', [
 
 bot.dialog('/Location', [
 	function(session, args, next){
-		session.send("I live in a server room.");
+		session.send("Under your hands, type slowly. Please.");
 	}
 ]).triggerAction({
 	matches: "Location"
