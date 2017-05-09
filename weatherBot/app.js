@@ -128,7 +128,11 @@ bot.dialog('/Location', [
 
 bot.dialog('/Name', [
 	function(session, args, next){
-		session.send("I don't have a name.");
+		if(session.userData.myname){
+			session.send(`I am ${session.userData.myname}.`);
+		}else{
+			session.send("I don't have a name.");
+		}
 	}
 ]).triggerAction({
 	matches: "Name"
