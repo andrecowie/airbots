@@ -1,0 +1,457 @@
+{
+  "luis_schema_version": "2.1.0",
+  "versionId": "andrest",
+  "name": "weatherLanguage",
+  "desc": "a nlp model for language relating to weather",
+  "culture": "en-us",
+  "intents": [
+    {
+      "name": "Age"
+    },
+    {
+      "name": "Appearance"
+    },
+    {
+      "name": "getWeather"
+    },
+    {
+      "name": "Grace"
+    },
+    {
+      "name": "Help"
+    },
+    {
+      "name": "Hobby"
+    },
+    {
+      "name": "Language"
+    },
+    {
+      "name": "Location"
+    },
+    {
+      "name": "Name"
+    },
+    {
+      "name": "None"
+    },
+    {
+      "name": "Reality"
+    },
+    {
+      "name": "State"
+    },
+    {
+      "name": "Time"
+    },
+    {
+      "name": "Welcome"
+    }
+  ],
+  "entities": [
+    {
+      "name": "when"
+    },
+    {
+      "name": "where"
+    }
+  ],
+  "composites": [],
+  "closedLists": [],
+  "bing_entities": [
+    "datetime"
+  ],
+  "actions": [],
+  "model_features": [
+    {
+      "name": "Cities",
+      "mode": true,
+      "words": "Auckland,Christchurch,Wellington,Sydney,Brisbane",
+      "activated": true
+    },
+    {
+      "name": "greetings",
+      "mode": true,
+      "words": "hello,hey,hi,sup,kia ora,gday",
+      "activated": true
+    }
+  ],
+  "regex_features": [],
+  "utterances": [
+    {
+      "text": "how can you help me?",
+      "intent": "Help",
+      "entities": []
+    },
+    {
+      "text": "what can you do?",
+      "intent": "Help",
+      "entities": []
+    },
+    {
+      "text": "help",
+      "intent": "Help",
+      "entities": []
+    },
+    {
+      "text": "what do you call yourself",
+      "intent": "Name",
+      "entities": []
+    },
+    {
+      "text": "what is your name?",
+      "intent": "Name",
+      "entities": []
+    },
+    {
+      "text": "who are you",
+      "intent": "Name",
+      "entities": []
+    },
+    {
+      "text": "what's the time?",
+      "intent": "Time",
+      "entities": []
+    },
+    {
+      "text": "what time is it?",
+      "intent": "Time",
+      "entities": []
+    },
+    {
+      "text": "what is the time?",
+      "intent": "Time",
+      "entities": []
+    },
+    {
+      "text": "which languages do you speak?",
+      "intent": "Language",
+      "entities": []
+    },
+    {
+      "text": "do you speak english",
+      "intent": "Language",
+      "entities": []
+    },
+    {
+      "text": "how long have you been",
+      "intent": "Age",
+      "entities": []
+    },
+    {
+      "text": "what is your age?",
+      "intent": "Age",
+      "entities": []
+    },
+    {
+      "text": "how old are you?",
+      "intent": "Age",
+      "entities": []
+    },
+    {
+      "text": "what do you do in your free time?",
+      "intent": "Hobby",
+      "entities": []
+    },
+    {
+      "text": "what are your hobbies?",
+      "intent": "Hobby",
+      "entities": []
+    },
+    {
+      "text": "what do you like?",
+      "intent": "Hobby",
+      "entities": []
+    },
+    {
+      "text": "where do you live?",
+      "intent": "Location",
+      "entities": []
+    },
+    {
+      "text": "where do you come from?",
+      "intent": "Location",
+      "entities": []
+    },
+    {
+      "text": "what do you look like?",
+      "intent": "Appearance",
+      "entities": []
+    },
+    {
+      "text": "are you real?",
+      "intent": "Reality",
+      "entities": []
+    },
+    {
+      "text": "thanks",
+      "intent": "Grace",
+      "entities": []
+    },
+    {
+      "text": "thank you",
+      "intent": "Grace",
+      "entities": []
+    },
+    {
+      "text": "are you doing ok?",
+      "intent": "State",
+      "entities": []
+    },
+    {
+      "text": "are you ok?",
+      "intent": "State",
+      "entities": []
+    },
+    {
+      "text": "how are you?",
+      "intent": "State",
+      "entities": []
+    },
+    {
+      "text": "sup",
+      "intent": "Welcome",
+      "entities": []
+    },
+    {
+      "text": "hi",
+      "intent": "Welcome",
+      "entities": []
+    },
+    {
+      "text": "hello",
+      "intent": "Welcome",
+      "entities": []
+    },
+    {
+      "text": "what is the weather in christchurch?",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 23,
+          "endPos": 34
+        }
+      ]
+    },
+    {
+      "text": "what is the weather on the 14th of june",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "when",
+          "startPos": 27,
+          "endPos": 38
+        }
+      ]
+    },
+    {
+      "text": "what weather will auckland have next week?",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "when",
+          "startPos": 32,
+          "endPos": 40
+        },
+        {
+          "entity": "where",
+          "startPos": 18,
+          "endPos": 25
+        }
+      ]
+    },
+    {
+      "text": "auckland",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "what is the weather in america?",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 23,
+          "endPos": 29
+        }
+      ]
+    },
+    {
+      "text": "new zealand",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "what is the weather in auckland?",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 23,
+          "endPos": 30
+        }
+      ]
+    },
+    {
+      "text": "what is the weather tomorrow?",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "when",
+          "startPos": 20,
+          "endPos": 27
+        }
+      ]
+    },
+    {
+      "text": "what is the weather?",
+      "intent": "getWeather",
+      "entities": []
+    },
+    {
+      "text": "dubai",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "usa",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "sydney",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "australia",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "i am in auckland",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 8,
+          "endPos": 15
+        }
+      ]
+    },
+    {
+      "text": "i am in hawaii",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 8,
+          "endPos": 13
+        }
+      ]
+    },
+    {
+      "text": "whats the weather in asia",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 21,
+          "endPos": 24
+        }
+      ]
+    },
+    {
+      "text": "i am in canada",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 8,
+          "endPos": 13
+        }
+      ]
+    },
+    {
+      "text": "whats the weather in europe",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 21,
+          "endPos": 26
+        }
+      ]
+    },
+    {
+      "text": "i am in darwin",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 8,
+          "endPos": 13
+        }
+      ]
+    },
+    {
+      "text": "whats the weather in california",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 21,
+          "endPos": 30
+        }
+      ]
+    },
+    {
+      "text": "asia",
+      "intent": "getWeather",
+      "entities": [
+        {
+          "entity": "where",
+          "startPos": 0,
+          "endPos": 3
+        }
+      ]
+    }
+  ]
+}
