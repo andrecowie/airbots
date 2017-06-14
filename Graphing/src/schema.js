@@ -2,6 +2,7 @@ import {
   makeExecutableSchema,
   addResolveFunctionsToSchema,
 } from 'graphql-tools';
+import { checkTablesExist } from './dynamooperations';
 
 const typeDefs = `
 # A question and its answers.
@@ -9,6 +10,7 @@ type Question{
   id: Int!
   # The text the user was shown which is the main question.
   text: String!
+  askedby: User
   # All or a particular Answer for a Question if the Id Of the answer isn't for the particular question null will be returned.
   answers(id: Int): [Answer] 
 }
@@ -37,6 +39,11 @@ type Query{
   questions(id: Int, ids: [Int], text: String): [Question]
   answers(id: Int, ids:[Int], text: String): [Answer]
 }
+
+type Mutation{
+    answerQuestion(questionid: Int!, userid: Int!, text: String!) : Answer
+    askQuestion(text: String!, userid: Int): Question
+}
 `;
 
 var question = [{'id': 0,'text': "What is your name?"},{'id': 1, 'text': "What do you do?"}];
@@ -56,7 +63,6 @@ const resolverMap = {
         }else if(id){
             return [user[ids]];
         }else if(name){
-        
         }
         return user;
     },
@@ -69,7 +75,7 @@ const resolverMap = {
             return thequestion;
         }else if(id){
             return question[id];
-        }else if(text{
+        }else if(text){
         }
         return question;
     },
@@ -116,8 +122,18 @@ const resolverMap = {
             }
           });
           return questionanswers;
-      }
-  }
+      },
+  },
+  Mutation: {
+    answerQuestion(obj, {questionid, userid, text}){
+        checkTablesExist();
+        console.log(`New answer, to question ${questionid} by user ${userid} the answer: ${text}`);
+    },
+    askQuestion(obj, {text, userid}){
+        checkTablesExist();
+        console.log(`A user asked a question`);
+    }
+  },
 };
 
 
