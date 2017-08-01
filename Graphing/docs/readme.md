@@ -6,7 +6,7 @@ The project looks at making data more accessible for chatbots and future applica
 
 ---
 
-Oscar and internal chatbots provide an interesting angle for digital communication with existing and soon to be built infrastructure. The goal of faster communication has the  potential to lead to more information flowing between different kinds of consumers of at Air New Zealand. The AUT project team is looking to display and learn new tech.
+Oscar and internal chatbots provide an interesting angle for digital communication with existing and soon to be built infrastructure. The goal of faster communication has the  potential to lead to more information flowing between different kinds of consumers of Air New Zealand. The AUT project team is looking to display and learn new tech.
 
 ### The System
 ---
