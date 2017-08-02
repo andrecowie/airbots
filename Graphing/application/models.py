@@ -5,8 +5,9 @@ import boto3
 import sys
 import os
 
+
 session = boto3.session.Session(profile_name="autrdproject")
-client = session.client('dynamodb')
+client = boto3.client('dynamodb')
 
 class KeysIndex(GlobalSecondaryIndex):
      class Meta:
@@ -48,8 +49,6 @@ LocationTypeTable._connection.connection._client = session.client('dynamodb', re
 if not LocationTable.exists() and not LocationTypeTable.exists():
     LocationTable.create_table(read_capacity_units=50, write_capacity_units=50, wait=True)
     LocationTypeTable.create_table(read_capacity_units=10, write_capacity_units=10, wait=True)
-    sys.path.append(os.path.dirname(os.getcwd()))
-    from webScrapper.locations import loadlocation
-    loadlocation.insert_data()
+    # insert_data()
 else:
     print("Tables Exist Doing Nothing")
