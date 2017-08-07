@@ -155,3 +155,7 @@ client.put_item(
         "countries": {"SS": countries.keys()}
     }
 )
+table = session.resource('dynamodb')
+table = table.Table('locations')
+with open('GeoDataCities/GEODATASOURCE-COUNTRy.TXT') as countriesfile:
+    
