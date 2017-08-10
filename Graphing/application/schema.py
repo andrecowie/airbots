@@ -49,11 +49,12 @@ def get_country(name=None, id=None):
 		countries = []
 		clist = []
 		for x in LocationTypeTable.get(0).countries:
-			clist.append(x.encode('utf-8'))
+			# clist.append(x.encode('utf-8'))
+			clist.append(x)
 		y = list(LocationTable.batch_get(clist))
 		for z in y:
-			countries.append(Country(id=z.id, name=z.name.encode('UTF-8'), destination='True',
-									 population=z.population.replace(",", ""), continent=z.continent.encode('UTF-8')))
+			countries.append(Country(id=z.id, name=z.name, destination='True',
+									 population=z.population.replace(",", ""), continent=z.continent))
 		return countries
 	elif name is not None and id is None:
 		l = LocationTable.name_index.query(name)
@@ -61,11 +62,12 @@ def get_country(name=None, id=None):
 		for x in l:
 			 y = LocationTable.get(x.id)
 			 if y.type == "Country":
-				 country.append(Country(id=y.id, name=y.name, destination='True',population=y.population.replace(",", ""), continent=y.continent.encode('UTF-8')))
+				 country.append(Country(id=y.id, name=y.name, destination='True',population=y.population.replace(",", ""), continent=y.continent))
 		return country
 	elif name is None and id is not None:
-		y = LocationTable.get(id)
-		return Country(id=y.id, name=y.name, destination='True', population=y.population.replace(",", ""), continent=y.continent.encode('UTF-8'))
+		print (str(id))
+		y = LocationTable.get(str(id))
+		return Country(id=y.id, name=y.name, destination='True', population=y.population.replace(",", ""), continent=y.continent)
 	else:
 		pass
 
@@ -75,7 +77,7 @@ def get_continent(name=None, id=None):
 		continents = []
 		clist = []
 		for x in LocationTypeTable.get(0).continents:
-			clist.append(x.encode('utf-8'))
+			clist.append(x)
 		y = list(LocationTable.batch_get(clist))
 		for z in y:
 			countri = []
@@ -84,7 +86,7 @@ def get_continent(name=None, id=None):
 			else:
 				if z.countries is not None:
 					for x in z.countries:
-						countri.append(x.encode('UTF-8'))
+						countri.append(x)
 			continents.append(Continent(id=z.id, name=z.name,
 										destination='True', landsize=z.landsize, population=z.population, countries=countri))
 		return continents
@@ -97,7 +99,7 @@ def get_continent(name=None, id=None):
 				 countri = []
 				 if y.countries is not None:
 					 for x in y.countries:
-						 countri.append(x.encode('UTF-8'))
+						 countri.append(x)
 					 continent.append(Continent(id=y.id, name=y.name, destination='True', landsize=y.landsize, population=y.population, countries=countri))
 		return continent
 	elif name is None and id is not None:
@@ -105,7 +107,7 @@ def get_continent(name=None, id=None):
 		countri=[]
 		if z.countries is not None:
 			for x in z.countries:
-				countri.append(x.encode('UTF-8'))
+				countri.append(x)
 		return Continent(id=z.id, name=z.name,
 						 destination='True', landsize=z.landsize, population=z.population, countries=countri)
 
