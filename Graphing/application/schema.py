@@ -39,9 +39,37 @@ class Country(graphene.ObjectType):
 		interfaces = (Location,)
 	population = graphene.Int()
 	continent = graphene.Field(lambda: Continent)
-
+	cities =  graphene.List(lambda: Continent)
 	def resolve_continent(self, args, *_):
 		return get_continent(None, self.continent)
+	def resolve_cities(self, args, * _):
+		return [get_city(None, i) for i in self.cities]
+
+def get_city(name=None, id=None):
+	if name is None and id is None:
+		cities = []
+		clist = []
+		for x in LocationTypeTable.get(0).cities:
+			# clist.append(x.encode('utf-8'))
+			clist.append(x)
+		y = list(LocationTable.batch_get(clist))
+		for z in y:
+			cities.append(Cities(id=z.id, name=z.name, destination='True',
+									 , country=z.country))
+		return cities
+	elif name is not None and id is None:
+		l = LocationTable.name_index.query(name)
+		city = []
+		for x in l:
+			 y = LocationTable.get(x.id)
+			 if y.type == "City":
+				 city.append(Country(id=y.id, name=y.name, destination='True', country=y.country))
+		return city
+	elif name is None and id is not None:
+		y = LocationTable.get(str(id))
+		return Country(id=y.id, name=y.name, destination='True',country=y.country)
+	else:
+		pass
 
 
 def get_country(name=None, id=None):
@@ -54,7 +82,7 @@ def get_country(name=None, id=None):
 		y = list(LocationTable.batch_get(clist))
 		for z in y:
 			countries.append(Country(id=z.id, name=z.name, destination='True',
-									 population=z.population.replace(",", ""), continent=z.continent))
+									 population=z.population.replace(",", ""), continent=z.continent, cities=y.cities))
 		return countries
 	elif name is not None and id is None:
 		l = LocationTable.name_index.query(name)
@@ -62,12 +90,12 @@ def get_country(name=None, id=None):
 		for x in l:
 			 y = LocationTable.get(x.id)
 			 if y.type == "Country":
-				 country.append(Country(id=y.id, name=y.name, destination='True',population=y.population.replace(",", ""), continent=y.continent))
+				 country.append(Country(id=y.id, name=y.name, destination='True',population=y.population.replace(",", ""), continent=y.continent, cities=y.cities))
 		return country
 	elif name is None and id is not None:
 		print (str(id))
 		y = LocationTable.get(str(id))
-		return Country(id=y.id, name=y.name, destination='True', population=y.population.replace(",", ""), continent=y.continent)
+		return Country(id=y.id, name=y.name, destination='True', population=y.population.replace(",", ""), continent=y.continent, cities=y.cities)
 	else:
 		pass
 
@@ -116,6 +144,7 @@ class Query(graphene.ObjectType):
 	'''A Base Query'''
 	countries=graphene.List(Country, name=graphene.String())
 	continents=graphene.List(Continent, name=graphene.String())
+	cities=graphene.List(City, name=graphene.String())
 
 	@resolve_only_args
 	def resolve_countries(self, name=None):
@@ -124,6 +153,10 @@ class Query(graphene.ObjectType):
 	@resolve_only_args
 	def resolve_continents(self, name=None):
 		return get_continent(name)
+
+	@resolve_only_args
+	def resolve_cities(self, name=None):
+		return get_city(name)
 
 
 schema=graphene.Schema(query=Query)
