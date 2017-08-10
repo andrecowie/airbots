@@ -5,9 +5,10 @@ import boto3
 import sys
 import os
 
-
-session = boto3.session.Session(profile_name="autrdproject")
-client = boto3.client('dynamodb')
+#Commenting out on master as they are my aws config :andre
+#session = boto3.session.Session(profile_name='autrdproject')
+session = boto3.session.Session()
+# client = boto3.client('dynamodb')
 
 class KeysIndex(GlobalSecondaryIndex):
      class Meta:
