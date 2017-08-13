@@ -1,7 +1,7 @@
 import graphene
 from graphene import resolve_only_args
 import uuid
-from models import LocationTypeTable, LocationTable
+from models import LocationTypeTable, LocationTable, CityTable
 
 continents = {}
 countries = {}
@@ -34,28 +34,38 @@ class Continent(graphene.ObjectType):
 		return float(self.landsize) / float(148428950)
 
 
+
 class Country(graphene.ObjectType):
 	class Meta:
 		interfaces = (Location,)
 	population = graphene.Int()
 	continent = graphene.Field(lambda: Continent)
-	cities =  graphene.List(lambda: Continent)
+	cities =  graphene.List(lambda: City)
 	def resolve_continent(self, args, *_):
 		return get_continent(None, self.continent)
 	def resolve_cities(self, args, * _):
-		return [get_city(None, i) for i in self.cities]
+		if 'cities' in self:
+			print self.cities
+			return [get_city(None, i) for i in self.cities]
+		else:
+			return [City()]
+
+class City(graphene.ObjectType):
+	'''Cities on earth, some have populations others don't. Are adding more to the database.'''
+
+	class Meta:
+		interfaces = (Location,)
+	country = graphene.Field(lambda: Country)
+	def resolve_country(self, args, *_):
+		return get_country(None, self.country)
 
 def get_city(name=None, id=None):
 	if name is None and id is None:
 		cities = []
-		clist = []
-		for x in LocationTypeTable.get(0).cities:
-			# clist.append(x.encode('utf-8'))
-			clist.append(x)
-		y = list(LocationTable.batch_get(clist))
+		print(CityTable.exists())
+		y = CityTable.scan()
 		for z in y:
-			cities.append(Cities(id=z.id, name=z.name, destination='True',
-									 , country=z.country))
+			cities.append(City(id=z.id, name=z.name, destination='True', country=z.country))
 		return cities
 	elif name is not None and id is None:
 		l = LocationTable.name_index.query(name)
@@ -66,8 +76,8 @@ def get_city(name=None, id=None):
 				 city.append(Country(id=y.id, name=y.name, destination='True', country=y.country))
 		return city
 	elif name is None and id is not None:
-		y = LocationTable.get(str(id))
-		return Country(id=y.id, name=y.name, destination='True',country=y.country)
+		y = CityTable.get(str(id))
+		return City(id=y.id, name=y.name, destination='True',country=y.country)
 	else:
 		pass
 
@@ -93,7 +103,7 @@ def get_country(name=None, id=None):
 				 country.append(Country(id=y.id, name=y.name, destination='True',population=y.population.replace(",", ""), continent=y.continent, cities=y.cities))
 		return country
 	elif name is None and id is not None:
-		print (str(id))
+		# print (str(id))
 		y = LocationTable.get(str(id))
 		return Country(id=y.id, name=y.name, destination='True', population=y.population.replace(",", ""), continent=y.continent, cities=y.cities)
 	else:
@@ -155,8 +165,8 @@ class Query(graphene.ObjectType):
 		return get_continent(name)
 
 	@resolve_only_args
-	def resolve_cities(self, name=None):
-		return get_city(name)
+	def resolve_cities(self, name=None, required=False):
+		return get_city(name, None)
 
 
 schema=graphene.Schema(query=Query)

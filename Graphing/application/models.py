@@ -6,8 +6,8 @@ import sys
 import os
 
 #Commenting out on master as they are my aws config :andre
-#session = boto3.session.Session(profile_name='autrdproject')
-session = boto3.session.Session()
+session = boto3.session.Session(profile_name='autrdproject')
+# session = boto3.session.Session()
 # client = boto3.client('dynamodb')
 
 class KeysIndex(GlobalSecondaryIndex):
@@ -28,6 +28,15 @@ class LocationTypeTable(Model):
     cities = UnicodeSetAttribute(null=True)
 
 
+class CityTable(Model):
+     class Meta:
+             table_name="cities"
+             region_name= "ap-southeast-2"
+     id = UnicodeAttribute(hash_key=True)
+     country = UnicodeAttribute()
+     name = UnicodeAttribute()
+     population = UnicodeAttribute(null=True)
+
 class LocationTable(Model):
      class Meta:
              table_name="locations"
@@ -39,13 +48,17 @@ class LocationTable(Model):
      population = UnicodeAttribute(null=True)
      type = UnicodeAttribute(null=True)
      continent = UnicodeAttribute(null=True)
+     country = UnicodeAttribute(null=True)
      countries = UnicodeSetAttribute(null=True)
+     cities = UnicodeSetAttribute(null=True)
      landsize = UnicodeAttribute(null=True)
 
 LocationTable._connection = LocationTable._get_connection()
 LocationTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
 LocationTypeTable._connection = LocationTypeTable._get_connection()
 LocationTypeTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
+CityTable._connection = CityTable._get_connection()
+CityTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
 
 if not LocationTable.exists() and not LocationTypeTable.exists():
     LocationTable.create_table(read_capacity_units=50, write_capacity_units=50, wait=True)
