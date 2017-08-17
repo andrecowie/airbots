@@ -1,6 +1,6 @@
 var builder = require('botbuilder');
 var request = require('request');
-var restify = require('restify');
+/*var restify = require('restify');
 
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function() {
@@ -9,9 +9,9 @@ server.listen(process.env.port || process.env.PORT || 3978, function() {
 var connector = new builder.ChatConnector({
     appId: process.env.MICROSOFT_APP_ID,
     appPassword: process.env.MICROSOFT_APP_PASSWORD
-});
-// var connector = new builder.ConsoleConnector().listen();
-server.post('/api/messages', connector.listen());
+});*/
+var connector = new builder.ConsoleConnector().listen();
+//server.post('/api/messages', connector.listen());
 var bot = new builder.UniversalBot(connector);
 
 var model = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/0461769f-c4f5-4ed2-9136-c10d96b45fee?subscription-key=32f34aed153a494c93c6bfefab5a9f31&timezoneOffset=0&verbose=true&q=";
