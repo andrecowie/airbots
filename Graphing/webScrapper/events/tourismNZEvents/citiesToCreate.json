@@ -1,0 +1,200 @@
+[
+    {
+        "id": {
+            "S": "0b4a6ac4-5843-4ffe-b268-b4d04123412a"
+        },
+        "name": {
+            "S": "The Coromandel"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "168685ae-34ea-45d3-acca-454eb5db70ed"
+        },
+        "name": {
+            "S": "Whangamata"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "ffd8cef4-c24d-4522-a780-3f5f69fc4949"
+        },
+        "name": {
+            "S": "Ashburton District"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "c11fc4d9-0d92-438a-bd18-bb0240ad0a3e"
+        },
+        "name": {
+            "S": "Waipa"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "4da2ef01-7072-46c3-95ff-be02dbb33627"
+        },
+        "name": {
+            "S": "Hauraki"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "c3b1b990-377e-4280-a22f-1a59b5a7a98b"
+        },
+        "name": {
+            "S": "Kaipara"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "3543b3a4-aaea-41c2-b940-bbc5d66ea342"
+        },
+        "name": {
+            "S": "South Taranaki"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "da25dcf1-ea74-48f5-a452-d5fae3d2a6f0"
+        },
+        "name": {
+            "S": "Bay of Islands"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "d9b14cc3-de33-4515-aeda-f869286664c5"
+        },
+        "name": {
+            "S": "Bay of Plenty"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "57435a8a-00fd-4660-b665-153511808187"
+        },
+        "name": {
+            "S": "Wairarapa"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "24991649-31b4-4f07-bb32-cdd03851a774"
+        },
+        "name": {
+            "S": "Feilding and District"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "c328bc71-37e1-474f-9dd1-8a0576feef1c"
+        },
+        "name": {
+            "S": "Buller"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "824aef43-70d9-4d8e-af00-1461cbec8878"
+        },
+        "name": {
+            "S": "North Otago"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "c3e6d83b-3ca1-40c1-9be5-3f4450e6865d"
+        },
+        "name": {
+            "S": "Kapiti Coast"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "75f78ca9-6a3d-450d-bc26-c5a71cb6be21"
+        },
+        "name": {
+            "S": "Marlborough"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "0e82e7e6-b603-4856-a6d7-a4c13c1ed81f"
+        },
+        "name": {
+            "S": "Canterbury"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "8314b62b-f841-4b74-bbc0-7051e6068893"
+        },
+        "name": {
+            "S": "Grey"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    },
+    {
+        "id": {
+            "S": "f3a63384-d235-4f32-8e44-45f87873819b"
+        },
+        "name": {
+            "S": "Southland"
+        },
+        "country": {
+            "S": "116f9eb2-ca3c-4959-a467-26118e982fcc"
+        }
+    }
+]
