@@ -2,7 +2,7 @@ import boto3, json, requests, uuid
 
 client = boto3.client('dynamodb')
 
-url = 'http://api.eventfinda.co.nz/v2/events.json?row=10&fields=event:(url,name,sessions),session:(timezone,datetime_start)&q=concert&order=popularity'
+url = 'http://api.eventfinda.co.nz/v2/events.json?&fields=event:(url,name,location, sessions),session:(timezone,datetime_start)'
 url_loc = 'http://api.eventfinda.co.nz/v2/locations.json?rows=1&levels=2&fields=location:(id,url_slug,name,children)'
 
 base64string = 'bmE1OjN4MjlqY3J2cHgyMg=='
@@ -13,8 +13,13 @@ data = json.loads(req.text)
 req_loc = requests.get(url_loc, headers={"Authorization": "Basic "+base64string})
 data_loc = json.loads(req_loc.text)
 
-for loc in data_loc["locations"]:
-    print(loc)
+for events in data["events"]:
+    print("ID: "+uuid.uuid4().__str__())
+    print("EVENT: "+(events["name"]))
+    print("URL: "+(events["url"]))
+    print("LOCATION: "+(events["location"]["name"]))
+    print("CITY: "+(events["location"]["summary"].split(', ')[-1])+"\n")
+
 
 # response = client.delete_table(
 #     TableName="eventfinda"
@@ -25,7 +30,7 @@ for loc in data_loc["locations"]:
 #     TableName = 'eventfinda',
 #     KeySchema=[
 #         {
-#             'AttributeName': 'id',
+#             'AttributeName': 'city',
 #             'KeyType': 'HASH'
 #         },
 #         {
@@ -48,42 +53,26 @@ for loc in data_loc["locations"]:
 #         'WriteCapacityUnits': 10
 #     }
 # )
-
-i = 0
-
-for event in data["events"]:
-    id = i
-    name = (event["name"])
-    url_ = (event["url"])
-    #print(event["sessions"]["datetime_start"]) add date
-    #can add a way to search by location id?
-    print("Adding event: ", id, name, url_)
-    FillTable = client.put_item(
-        TableName="eventfinda",
-        Item={
-            'id': {'N': str(id)},
-            'name': {'S': name},
-            'url': {'S': url_}
-        }
-    )
-    i += 1
-
-#client.put_item(
-#    TableName = "eventfinda",
-#    Item = {
-        # event: name, location, date, category, url
-#    }
-#)
+#
+#
+# for event in data["events"]:
+#     id = uuid.uuid4()
+#     name = (event["name"])
+#     url_ = (event["url"])
+#     location = (event["location"]["name"])
+#     city = (event["location"]["summary"].split(', ')[-1]
+#
+#     #print(event["sessions"]["datetime_start"]) add date
+#     print("Adding event: ", id, name, url_)
+#     FillTable = client.put_item(
+#         TableName="eventfinda",
+#         Item={
+#             'id' : {'S' : id},
+#             'name': {'S': name},
+#             'url': {'S': url_},
+#             'location' : {'S': location},
+#             'city' : {'S': city}
+#         }
+#     )
 
 
-
-#client.put_item(
-#    TableName="eventfinda",
- #   Item={
-  #      "id":{'N': "0"},
-   #     "continents": {"SS": continentss.keys()},
-    #    "countries": {"SS": countries.keys()}
-#    }
-#)
-#table = session.resource('dynamodb')
-#table = table.Table('locations')
