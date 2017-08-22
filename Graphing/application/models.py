@@ -50,6 +50,7 @@ class CityTable(Model):
      name_index = CitiesNameIndex()
      population = UnicodeAttribute(null=True)
      airports = UnicodeSetAttribute(null=True)
+     events = UnicodeSetAttribute(null=True)
 
 class KeysIndex(GlobalSecondaryIndex):
      class Meta:
@@ -75,6 +76,7 @@ class LocationTable(Model):
      cities = UnicodeSetAttribute(null=True)
      landsize = UnicodeAttribute(null=True)
      airports = UnicodeSetAttribute(null=True)
+     events = UnicodeSetAttribute(null=True)
 
 LocationTable._connection = LocationTable._get_connection()
 LocationTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
