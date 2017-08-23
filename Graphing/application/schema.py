@@ -1,7 +1,7 @@
 import graphene
 from graphene import resolve_only_args
 import uuid
-from models import LocationTypeTable, LocationTable, CityTable, AirportTable
+from models import LocationTypeTable, LocationTable, CityTable, AirportTable, EventTable
 
 continentstore = {}
 allContinents = False
@@ -11,7 +11,8 @@ citystore = {}
 allCitys = False
 airportstore = {}
 allAirports = False
-
+eventstore = {}
+allEvents = False
 # client = session.client('dynamodb')
 
 class Location(graphene.Interface):
@@ -66,7 +67,9 @@ class Country(graphene.ObjectType):
 		if 'cities' in self.__dict__:
 			if self.cities is not None:
 				if len(self.cities) > 0:
-					return [Event(title="Example Event", location="Eden Park", coordinates=LatLng(latitude=174.7448,longitude=36.8750),type="Sport", description="Come to our example event",city=list(self.cities)[0], country=self.id)]
+					return get_batch_events(self.events)
+				elif len(self.cities) == 1:
+					return [get_event(self.events.pop())]
 	def resolve_airnzdestination(self, args, *_):
 		if 'airports' in self.__dict__:
 			return is_countryairnz_destination(self.airports)
@@ -140,7 +143,6 @@ class Airport(graphene.ObjectType):
 	def resolve_cities(self, args, *_):
 		if 'cities' in self.__dict__:
 			if self.cities is not None:
-
 				if len(list(self.cities)) > 1:
 					return get_batch_cities(list(self.cities))
 				elif len(list(self.cities)) == 1:
@@ -167,6 +169,44 @@ class Event(graphene.ObjectType):
 	def resolve_country(self, args, *_):
 		return get_country(self.country)
 
+def get_batch_events(ids):
+	eventreturn = []
+	global eventstore
+	idsStored = list(set(ids).intersection(set(eventstore.keys())))
+	for x in idsStored:
+		eventreturn.append(eventstore[x])
+		ids.remove(x)
+	events = list(EventTable.batch_get(ids))
+	if len(events) > 0:
+		for x in events:
+			eventstore[x.id] = Event(id=x.id, title=x.name,description=x.description, location=x.venuename, type=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			eventreturn.append(eventstore[x.id])
+	return eventstore
+
+def get_event(id=None):
+	global allEvents
+	global eventstore
+	if id is None:
+		if allEvents:
+			return eventstore.values()
+		events = []
+		y = EventTable.scan()
+		for x in y:
+			eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description, location=x.venuename, type=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			events.append(eventstore[x.id])
+		allEvents = True
+		return airports
+	else:
+		if id in eventstore.keys():
+			return eventstore[id]
+		else:
+			y = EventTable.get(id)
+			Event(id=x.id, title=x.name,description=x.description, location=x.venuename, type=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			return airportstore[y.id]
+
+
+
+
 def is_countryairnz_destination(airports):
 	pass
 
@@ -186,7 +226,8 @@ def get_batch_airports(ids):
 	airports = list(AirportTable.batch_get(ids))
 	if len(airports) > 0 :
 		for x in airports:
-			airportreturn.append(Airport(id=x.id, name=x.name, airnzdestination=x.airnzdestination,iata=x.iata, icao=x.icao, cities=x.cities, country=x.country))
+			airportstore[x.id] = Airport(id=x.id, name=x.name, airnzdestination=x.airnzdestination,iata=x.iata, icao=x.icao, cities=x.cities, country=x.country)
+			airportreturn.append(airportstore[x.id])
 	return airportreturn
 
 def get_airport(id=None):
@@ -221,7 +262,7 @@ def get_batch_cities(ids):
 	cities = list(CityTable.batch_get(ids))
 	if len(cities) > 0:
 		for x in cities:
-			cityreturn.append(City(id = x.id, name=x.name, airports=x.airports,country=x.country))
+			cityreturn.append(City(id = x.id, name=x.name, airports=x.airports,country=x.country, events=x.events))
 	return cityreturn
 
 
@@ -241,7 +282,7 @@ def get_city(id=None):
 		cities = []
 		y = CityTable.scan()
 		for z in y:
-			citystore[z.id] = City(id=z.id, name=z.name,airports=z.airports, country=z.country)
+			citystore[z.id] = City(id=z.id, name=z.name,airports=z.airports, country=z.country, events=z.events)
 			cities.append(citystore[z.id])
 		allCitys = True
 		return cities
@@ -250,7 +291,7 @@ def get_city(id=None):
 			return citystore[id]
 		else:
 			y = CityTable.get(id)
-			citystore[y.id] = City(id=y.id, name=y.name, airports=y.airports,country=y.country)
+			citystore[y.id] = City(id=y.id, name=y.name, airports=y.airports,country=y.country,events=z.events)
 			return citystore[y.id]
 
 def get_batch_countries(ids):
@@ -263,7 +304,7 @@ def get_batch_countries(ids):
 	countri = list(LocationTable.batch_get(ids))
 	if len(countri) > 0:
 		for x in countri:
-			countries.append(Country(id=x.id, name=x.name, airports=x.airports,population=x.population.replace(",", ""), continent=x.continent, cities=x.cities))
+			countries.append(Country(id=x.id, name=x.name, airports=x.airports,population=x.population.replace(",", ""), continent=x.continent, cities=x.cities, events=x.events))
 	return countries
 
 def get_countryorcontinent_id(name):
@@ -287,7 +328,7 @@ def get_country(id=None):
 		y = list(LocationTable.batch_get(clist))
 		allCountries=True
 		for z in y:
-			countrystore[z.id] = Country(id=z.id, name=z.name, airports=z.airports,population=z.population.replace(",", ""), continent=z.continent, cities=z.cities)
+			countrystore[z.id] = Country(id=z.id, name=z.name, airports=z.airports,population=z.population.replace(",", ""), continent=z.continent, cities=z.cities, events=z.events)
 			countries.append(countrystore[z.id])
 		return countries
 	elif id is not None:
@@ -296,7 +337,7 @@ def get_country(id=None):
 		else:
 			y = LocationTable.get(str(id))
 			if y.type == 'Country':
-				countrystore[y.id] = Country(id=y.id, name=y.name, airports=y.airports, population=y.population.replace(",", ""), continent=y.continent, cities=y.cities)
+				countrystore[y.id] = Country(id=y.id, name=y.name, airports=y.airports, population=y.population.replace(",", ""), continent=y.continent, cities=y.cities, events=y.events)
 				return countrystore[y.id]
 	return None
 
