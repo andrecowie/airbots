@@ -167,6 +167,8 @@ class Event(graphene.ObjectType):
 	id = graphene.ID()
 	title = graphene.String()
 	location = graphene.String()
+	date = graphene.String()
+	time = graphene.String()
 	coordinates = graphene.Field(LatLng)
 	category = graphene.String()
 	description = graphene.String()
@@ -187,7 +189,7 @@ def get_batch_events(ids):
 	events = list(EventTable.batch_get(ids))
 	if len(events) > 0:
 		for x in events:
-			eventstore[x.id] = Event(id=x.id, title=x.name,description=x.description, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			eventstore[x.id] = Event(id=x.id, title=x.name,description=x.description,date=x.date, time=x.time, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
 			eventreturn.append(eventstore[x.id])
 	return eventreturn
 
@@ -200,7 +202,7 @@ def get_event(id=None):
 		events = []
 		y = EventTable.scan()
 		for x in y:
-			eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description,date=x.date, time=x.time, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
 			events.append(eventstore[x.id])
 		allEvents = True
 		return events
@@ -209,7 +211,7 @@ def get_event(id=None):
 			return eventstore[id]
 		else:
 			y = EventTable.get(id)
-			eventstore[y.id] = Event(id=y.id, title=y.name,description=y.description, location=y.venuename, type=y.category, category=y.country, city=y.city, coordinates=LatLng(latitude=y.latitude, longitude=y.longitude))
+			eventstore[y.id] = Event(id=y.id, title=y.name,description=y.description, date=y.date, time=y.time, location=y.venuename, type=y.category, category=y.country, city=y.city, coordinates=LatLng(latitude=y.latitude, longitude=y.longitude))
 			return eventstore[y.id]
 
 
