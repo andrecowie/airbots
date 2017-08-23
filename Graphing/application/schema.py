@@ -70,6 +70,7 @@ class Country(graphene.ObjectType):
 					return get_batch_events(self.events)
 				elif len(self.cities) == 1:
 					return [get_event(self.events.pop())]
+		return []
 	def resolve_airnzdestination(self, args, *_):
 		if 'airports' in self.__dict__:
 			return is_countryairnz_destination(self.airports)
@@ -110,7 +111,13 @@ class City(graphene.ObjectType):
 	country = graphene.Field(lambda: Country)
 	events = graphene.List(lambda: Event)
 	def resolve_events(self, args, *_):
-		return [Event(title="Example Event", location="Eden Park", coordinates=LatLng(latitude=174.7448,longitude=36.8750),type="Sport", description="Come to our example event",city=self.id, country=self.country)]
+		if 'events' in self.__dict__:
+			if self.events is not None:
+				if len(self.events) > 1:
+					return get_batch_events(self.events)
+				elif len(self.events) == 1:
+					return [get_event(list(self.events)[0])]
+		return []
 	def resolve_airnzdestination(self, args, *_):
 		if 'airports' in self.__dict__:
 			return is_cityairnz_destination(self.airports)
@@ -157,10 +164,11 @@ class LatLng(graphene.ObjectType):
 
 class Event(graphene.ObjectType):
 	"""Our Event Type To Explore in the the coming sprint"""
+	id = graphene.ID()
 	title = graphene.String()
 	location = graphene.String()
 	coordinates = graphene.Field(LatLng)
-	type = graphene.String()
+	category = graphene.String()
 	description = graphene.String()
 	city = graphene.Field(lambda: City)
 	country = graphene.Field(lambda: Country)
@@ -179,9 +187,9 @@ def get_batch_events(ids):
 	events = list(EventTable.batch_get(ids))
 	if len(events) > 0:
 		for x in events:
-			eventstore[x.id] = Event(id=x.id, title=x.name,description=x.description, location=x.venuename, type=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			eventstore[x.id] = Event(id=x.id, title=x.name,description=x.description, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
 			eventreturn.append(eventstore[x.id])
-	return eventstore
+	return eventreturn
 
 def get_event(id=None):
 	global allEvents
@@ -192,19 +200,17 @@ def get_event(id=None):
 		events = []
 		y = EventTable.scan()
 		for x in y:
-			eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description, location=x.venuename, type=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+			eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
 			events.append(eventstore[x.id])
 		allEvents = True
-		return airports
+		return events
 	else:
 		if id in eventstore.keys():
 			return eventstore[id]
 		else:
 			y = EventTable.get(id)
-			Event(id=x.id, title=x.name,description=x.description, location=x.venuename, type=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
-			return airportstore[y.id]
-
-
+			eventstore[y.id] = Event(id=y.id, title=y.name,description=y.description, location=y.venuename, type=y.category, category=y.country, city=y.city, coordinates=LatLng(latitude=y.latitude, longitude=y.longitude))
+			return eventstore[y.id]
 
 
 def is_countryairnz_destination(airports):
@@ -291,7 +297,7 @@ def get_city(id=None):
 			return citystore[id]
 		else:
 			y = CityTable.get(id)
-			citystore[y.id] = City(id=y.id, name=y.name, airports=y.airports,country=y.country,events=z.events)
+			citystore[y.id] = City(id=y.id, name=y.name, airports=y.airports,country=y.country,events=y.events)
 			return citystore[y.id]
 
 def get_batch_countries(ids):
@@ -476,6 +482,7 @@ class Query(graphene.ObjectType):
 	continents=graphene.List(Continent, name=graphene.String())
 	cities=graphene.List(City, name=graphene.String())
 	airports=graphene.List(Airport, iata=graphene.String())
+	events=graphene.List(Event, category=graphene.String())
 
 	@resolve_only_args
 	def resolve_countries(self, name=None):
@@ -505,5 +512,11 @@ class Query(graphene.ObjectType):
 		else:
 			return get_airport(get_airport_id(iata))
 
+	@resolve_only_args
+	def resolve_events(self, category=None, required=False):
+		if category is None:
+			return get_event(category)
+		else:
+			return get_airport(get_airport_id(iata))
 
 schema=graphene.Schema(query=Query, mutation=Mutations)
