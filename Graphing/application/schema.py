@@ -114,6 +114,7 @@ class City(graphene.ObjectType):
 		if 'events' in self.__dict__:
 			if self.events is not None:
 				if len(self.events) > 1:
+					print "Working"
 					return get_batch_events(self.events)
 				elif len(self.events) == 1:
 					return [get_event(list(self.events)[0])]
@@ -180,13 +181,14 @@ class Event(graphene.ObjectType):
 		return get_country(self.country)
 
 def get_batch_events(ids):
+	methodsIds = list(ids)
 	eventreturn = []
 	global eventstore
 	idsStored = list(set(ids).intersection(set(eventstore.keys())))
 	for x in idsStored:
 		eventreturn.append(eventstore[x])
-		ids.remove(x)
-	events = list(EventTable.batch_get(ids))
+		methodsIds.remove(x)
+	events = list(EventTable.batch_get(methodsIds))
 	if len(events) > 0:
 		for x in events:
 			eventstore[x.id] = Event(id=x.id, title=x.name,description=x.description,date=x.date, time=x.time, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
@@ -227,11 +229,12 @@ def get_airport_id(iata):
 def get_batch_airports(ids):
 	airportreturn = []
 	global airportstore
+	methodsIds = list(ids)
 	idsStored = list(set(ids).intersection(set(airportstore.keys())))
 	for x in idsStored:
 		airportreturn.append(airportstore[x])
-		ids.remove(x)
-	airports = list(AirportTable.batch_get(ids))
+		methodsIds.remove(x)
+	airports = list(AirportTable.batch_get(methodsIds))
 	if len(airports) > 0 :
 		for x in airports:
 			airportstore[x.id] = Airport(id=x.id, name=x.name, airnzdestination=x.airnzdestination,iata=x.iata, icao=x.icao, cities=x.cities, country=x.country)
@@ -263,11 +266,12 @@ def get_airport(id=None):
 def get_batch_cities(ids):
 	global citystore
 	cityreturn = []
+	methodsIds = list(ids)
 	idsStored = list(set(ids).intersection(set(citystore.keys())))
 	for x in idsStored:
 		cityreturn.append(citystore[x])
-		ids.remove(x)
-	cities = list(CityTable.batch_get(ids))
+		methodsIds.remove(x)
+	cities = list(CityTable.batch_get(methodsIds))
 	if len(cities) > 0:
 		for x in cities:
 			cityreturn.append(City(id = x.id, name=x.name, airports=x.airports,country=x.country, events=x.events))
@@ -305,11 +309,12 @@ def get_city(id=None):
 def get_batch_countries(ids):
 	global countrystore
 	countries = []
+	methodsIds = list(ids)
 	idsStored = list(set(ids).intersection(set(countrystore.keys())))
 	for x in idsStored:
 		countries.append(countrystore[x])
-		ids.remove(x)
-	countri = list(LocationTable.batch_get(ids))
+		methodsIds.remove(x)
+	countri = list(LocationTable.batch_get(methodsIds))
 	if len(countri) > 0:
 		for x in countri:
 			countries.append(Country(id=x.id, name=x.name, airports=x.airports,population=x.population.replace(",", ""), continent=x.continent, cities=x.cities, events=x.events))
