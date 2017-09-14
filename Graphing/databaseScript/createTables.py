@@ -24,7 +24,11 @@ client.create_table(
             'AttributeName': 'name',
             'KeyType' : 'RANGE'
         }
-    ]
+    ],
+    ProvisionedThroughput={
+        'ReadCapacityUnits': 50,
+        'WriteCapacityUnits': 50
+    }
 )
 
 client.create_table(
@@ -48,5 +52,9 @@ client.create_table(
             'AttributeName': 'title',
             'KeyType' : 'RANGE'
         }
-    ]
+    ],
+    ProvisionedThroughput={
+        'ReadCapacityUnits': 50,
+        'WriteCapacityUnits': 50
+    }
 )
