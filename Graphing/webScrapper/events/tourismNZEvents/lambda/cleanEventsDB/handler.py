@@ -1,3 +1,4 @@
+import boto3, json
 from pynamodb.models import Model
 from pynamodb.attributes import UnicodeAttribute, UnicodeSetAttribute, NumberAttribute, BooleanAttribute
 from pynamodb.indexes import GlobalSecondaryIndex, KeysOnlyProjection

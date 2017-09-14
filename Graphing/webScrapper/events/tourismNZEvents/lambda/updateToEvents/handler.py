@@ -81,7 +81,8 @@ EventTable._connection.connection._client = session.client('dynamodb', region_na
 
 # url_loc = 'http://api.eventfinda.co.nz/v2/locations.json?rows=1&levels=2&fields=location:(id,url_slug,name,children)'
 
-
+nz = client.query(TableName='locations', IndexName="location-index", KeyConditionExpression="#S = :aus", ExpressionAttributeValues={":aus" : {'S':"New Zealand"}}, ExpressionAttributeNames={"#S": "name"})
+nzcities = client.get_item(TableName='locations', Key={'id':{'S':nz['Items'][0]['id']['S']}}, AttributesToGet=['cities'])['Item']['cities']['SS']
 nzcitiesbatchlook = []
 cityNameToID = {}
 countriesUpdate = {nz['Items'][0]['id']['S']: []}
@@ -89,8 +90,6 @@ citiesUpdate = {}
 eventsToAdd = []
 citiesToCreate=[]
 def populate():
-    nz = client.query(TableName='locations', IndexName="location-index", KeyConditionExpression="#S = :aus", ExpressionAttributeValues={":aus" : {'S':"New Zealand"}}, ExpressionAttributeNames={"#S": "name"})
-    nzcities = client.get_item(TableName='locations', Key={'id':{'S':nz['Items'][0]['id']['S']}}, AttributesToGet=['cities'])['Item']['cities']['SS']
     for x in nzcities:
         nzcitiesbatchlook.append({'id': {'S':x}})
     res = client.batch_get_item(RequestItems={
