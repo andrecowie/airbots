@@ -150,5 +150,7 @@ def main(event, context):
         CityTable(id=x['id'], name=x['name'], country=x['country']).save()
     for x in eventsToAdd:
         EventTable(id=x['id'], name=x['name'], url=x['url'], time=x['time'], date=x['date'], country=x['country'], city=x['city'], latitude=x['latitude'], longitude=x['longitude'],venuename=x['venuename'], category=x['category']).save()
-        LocationTable.get(x['country']).update({'events':{'action':"ADD", "value": [x['id']]}})
-        CityTable.get(x['city']).update({'events':{'action':"ADD", "value": [x['id']]}})
+    for x in countriesUpdate.keys():
+        LocationTable.get(x).update({'events':{'action':"ADD", "value": countriesUpdate[x]}})
+    for x in citiesUpdate.keys():
+        CityTable.get(x).update({'events':{'action':"ADD", "value": citiesUpdate[x]}})
