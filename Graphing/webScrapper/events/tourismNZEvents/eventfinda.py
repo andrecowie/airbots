@@ -1,7 +1,81 @@
 import boto3, json, requests, uuid
 from datetime import datetime
+from pynamodb.models import Model
+from pynamodb.attributes import UnicodeAttribute, UnicodeSetAttribute, NumberAttribute, BooleanAttribute
+from pynamodb.indexes import GlobalSecondaryIndex, KeysOnlyProjection
 
 client = boto3.client('dynamodb')
+session = boto3.session.Session()
+
+class CitiesNameIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'name-index'
+             read_capacity_units = 5
+             write_capacity_units = 5
+             projection = KeysOnlyProjection()
+     name = UnicodeAttribute(hash_key=True)
+
+class CityTable(Model):
+     class Meta:
+             table_name="cities"
+             region_name= "ap-southeast-2"
+     id = UnicodeAttribute(hash_key=True)
+     country = UnicodeAttribute()
+     name = UnicodeAttribute()
+     name_index = CitiesNameIndex()
+     population = UnicodeAttribute(null=True)
+     airports = UnicodeSetAttribute(null=True)
+     events = UnicodeSetAttribute(null=True)
+
+class KeysIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'location-index'
+             read_capacity_units = 5
+             write_capacity_units = 5
+             projection = KeysOnlyProjection()
+     name = UnicodeAttribute(hash_key=True)
+
+class LocationTable(Model):
+     class Meta:
+             table_name="locations"
+             region_name= "ap-southeast-2"
+     id = UnicodeAttribute(hash_key=True)
+     name = UnicodeAttribute()
+     name_index = KeysIndex()
+     infolink = UnicodeAttribute(null=True)
+     population = UnicodeAttribute(null=True)
+     type = UnicodeAttribute(null=True)
+     continent = UnicodeAttribute(null=True)
+     country = UnicodeAttribute(null=True)
+     countries = UnicodeSetAttribute(null=True)
+     cities = UnicodeSetAttribute(null=True)
+     landsize = UnicodeAttribute(null=True)
+     airports = UnicodeSetAttribute(null=True)
+     events = UnicodeSetAttribute(null=True)
+
+class EventTable(Model):
+    class Meta:
+        table_name="events"
+        region_name="ap-southeast-2"
+    id = UnicodeAttribute(hash_key=True)
+    name = UnicodeAttribute(null=True)
+    url = UnicodeAttribute(null=True)
+    time = UnicodeAttribute(null=True)
+    date = UnicodeAttribute(null=True)
+    country = UnicodeAttribute(null=True)
+    city = UnicodeAttribute(null=True)
+    latitude = UnicodeAttribute(null=True)
+    longitude = UnicodeAttribute(null=True)
+    venuename = UnicodeAttribute(null=True)
+    category = UnicodeAttribute(null=True)
+    description = UnicodeAttribute(null=True)
+
+LocationTable._connection = LocationTable._get_connection()
+LocationTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
+CityTable._connection = CityTable._get_connection()
+CityTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
+EventTable._connection = EventTable._get_connection()
+EventTable._connection.connection._client = session.client('dynamodb', region_name='ap-southeast-2')
 
 # url = 'http://api.eventfinda.co.nz/v2/events.json?&fields=event:(url,name,location, datetime_summary,sessions,category),session:(timezone,datetime_start) ' #&date_format=%A%20%e%20%B&date_start_end_separator=%20until%20'
 
@@ -49,7 +123,6 @@ while True:
             if each in events["location"]["summary"].split(', '):
                 cityid = cityNameToID[each]
                 break
-
         eventid = str(uuid.uuid4())
         if not cityid:
             for each in cityNameToID.keys():
@@ -59,108 +132,22 @@ while True:
             if not cityid:
                 cityid = str(uuid.uuid4())
                 cityNameToID[events["location"]["summary"].split(', ')[-1]] = cityid
-                citiesToCreate.append({'id': {"S": cityid}, "name": {"S":events["location"]["summary"].split(', ')[-1]}, "country":nz['Items'][0]['id']})
+                citiesToCreate.append({'id':cityid, "name": events["location"]["summary"].split(', ')[-1], "country":nz['Items'][0]['id']['S']})
         else:
             if cityid in citiesUpdate.keys():
                 citiesUpdate[cityid].append(eventid)
             else:
                 citiesUpdate[cityid] = [eventid]
         countriesUpdate[nz['Items'][0]['id']['S']].append(eventid)
-        eventitem = {'venuename':{'S':events['location']['name']},"longitude":{'S': str(events["location"]['point']['lng'])},"latitude":{'S': str(events["location"]['point']['lat'])},"category": {'S': events["category"]["name"]},'city':{'S':cityid},"country":nz['Items'][0]['id'],"date":{'S':str(dt.date())}, "time":{'S':str(dt.time())},"id": {'S': eventid}, "name":{'S': events['name']}, "url":{'S':events['url']}}
-        eventsToAdd.append({"PutRequest":{"Item":eventitem}})
-with open("events.json", 'w') as f:
-    json.dump(eventsToAdd, f, indent=4)
-with open("citiesToCreate.json", 'w') as f:
-    json.dump(citiesToCreate, f, indent=4)
-with open("countriesUpdate.json", 'w') as f:
-    json.dump(countriesUpdate, f, indent=4)
-with open("citiesUpdate.json", 'w') as f:
-    json.dump(citiesUpdate, f, indent=4)
-print (citiesUpdate)
+        eventitem = {'venuename':events['location']['name'],"longitude": str(events["location"]['point']['lng']),"latitude":str(events["location"]['point']['lat']),"category":events["category"]["name"],'city':cityid,"country":nz['Items'][0]['id']['S'],"date":str(dt.date()), "time":str(dt.time()),"id": eventid, "name": events['name'], "url":events['url']}
+        eventsToAdd.append(eventitem)
 
-print (countriesUpdate)
+def main():
 
-print(eventsToAdd)
-
-print (citiesToCreate)
-
-print (cityNameToID)
-
-sizedputs = []
-for i in range(0, len(eventsToAdd), 25):
-	sizedputs.append(eventsToAdd[i:i+25])
-
-# res = client.update_item(TableName='locations', Key={ 'id': {'S': countriesUpdate.keys()[0]}}, UpdateExpression='SET events = :ev', ExpressionAttributeValues = {':ev':{'SS':countriesUpdate[countriesUpdate.keys()[0]]}})
-# res = client.update_item(TableName='cities', Key={ 'id': {'S': countriesUpdate.keys()[0]}}, UpdateExpression='SET events = :ev', ExpressionAttributeValues = {':ev':{'SS':countriesUpdate[countriesUpdate.keys()[0]]}})
-for put in sizedputs:
-    res = client.batch_write_item(RequestItems={'events': put})
-    print ("Another 25")
-
-
-    #["datetime_start"]) #["timezone"])
-  #  print("ID: "+.__str__())
-   # print("EVENT: "+(events["name"]))
-   # print(events["category"]["name"])
-   # print("URL: "+(events["url"]))
-    #print("DATE: "+events["summary"]["startdate_time"])
-   # print("LOCATION: "+(events["location"]["name"]))
-   # print("CITY: "+(events["location"]["summary"].split(', ')[-1])+"\n")
-
-
-# response = client.delete_table(
-#     TableName="eventfinda"
-# )
-
-# creating the DynamoDB table
-# table = client.create_table(
-#     TableName = 'eventfinda',
-#     KeySchema=[
-#         {
-#             'AttributeName': 'id',
-#             'KeyType': 'HASH'
-#         },
-#         {
-#             'AttributeName': 'name',
-#             'KeyType': 'RANGE'
-#         }
-#     ],
-#     AttributeDefinitions=[
-#         {
-#             'AttributeName': 'id',
-#             'AttributeType': 'N'
-#         },
-#         {
-#             'AttributeName': 'name',
-#             'AttributeType': 'S'
-#         }
-#     ],
-#     ProvisionedThroughput={
-#         'ReadCapacityUnits': 10,
-#         'WriteCapacityUnits': 10
-#     }
-# )
-#
-#
-# for event in data["events"]:
-#     id = uuid.uuid4()
-#     name = (event["name"])
-#     category = (event["category"]["name"])
-#     url_ = (event["url"])
-#     location = (event["location"]["name"])
-#     city = (event["location"]["summary"].split(', ')[-1]
-#
-#     #print(event["sessions"]["datetime_start"]) add date
-#     print("Adding event: ", id, name, url_)
-#     FillTable = client.put_item(
-#         TableName="eventfinda",
-#         Item={
-#             'id' : {'S' : id},
-#             'name': {'S': name},
-#             'category': {'S' : category},
-#             'url': {'S': url_},
-#             'location' : {'S': location},
-#             'city' : {'S': city}
-#         }
-#     )
-
-
+    EventTable.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
+    for x in citiesToCreate:
+        CityTable(id=x['id'], name=x['name'], country=x['country'])
+    for x in eventsToAdd:
+        EventTable(id=x['id'], name=x['name'], url=x['url'], time=x['time'], date=x['date'], country=x['country'], city=x['city'], latitude=x['latitude'], longitude=x['longitude'],venuename=x['venuename'], category=x['category']).save()
+        LocationTable.get(x['country']).update({'events':{'action':"ADD", "value": x['id']}})
+        CityTable.get(x['city']).update({'events':{'action':"ADD", "value": x['id']}})

@@ -63,12 +63,12 @@ class Country(graphene.ObjectType):
 	cities =  graphene.List(lambda: City, name=graphene.String())
 	airports = graphene.List(lambda: Airport)
 	events = graphene.List(lambda: Event)
-	def resolve_event(self, args, *_):
-		if 'cities' in self.__dict__:
-			if self.cities is not None:
-				if len(self.cities) > 0:
+	def resolve_events(self, args, *_):
+		if 'events' in self.__dict__:
+			if self.events is not None:
+				if len(self.events) > 0:
 					return get_batch_events(self.events)
-				elif len(self.cities) == 1:
+				elif len(self.events) == 1:
 					return [get_event(self.events.pop())]
 		return []
 	def resolve_airnzdestination(self, args, *_):
@@ -112,9 +112,10 @@ class City(graphene.ObjectType):
 	events = graphene.List(lambda: Event)
 	def resolve_events(self, args, *_):
 		if 'events' in self.__dict__:
+			print "Working"
 			if self.events is not None:
+				print "Working"
 				if len(self.events) > 1:
-					print "Working"
 					return get_batch_events(self.events)
 				elif len(self.events) == 1:
 					return [get_event(list(self.events)[0])]
@@ -489,7 +490,7 @@ class Query(graphene.ObjectType):
 	continents=graphene.List(Continent, name=graphene.String())
 	cities=graphene.List(City, name=graphene.String())
 	airports=graphene.List(Airport, iata=graphene.String())
-	events=graphene.List(Event, category=graphene.String())
+	events=graphene.List(Event, city=graphene.String(),category=graphene.String())
 
 	@resolve_only_args
 	def resolve_countries(self, name=None):
