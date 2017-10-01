@@ -62,7 +62,7 @@ class Country(graphene.ObjectType):
 	continent = graphene.Field(lambda: Continent)
 	cities =  graphene.List(lambda: City, name=graphene.String())
 	airports = graphene.List(lambda: Airport)
-	events = graphene.List(lambda: Event)
+	events = graphene.List(lambda: Event, category=graphene.String(), date=graphene.String())
 	def resolve_events(self, args, *_):
 		if 'events' in self.__dict__:
 			if self.events is not None:
@@ -194,15 +194,18 @@ def get_batch_events(ids):
 			eventreturn.append(eventstore[x.id])
 	return eventreturn
 
-def get_event(id=None, category=None):
+def get_event(id=None, category=None, date=None):
 	global allEvents
 	global eventstore
 	if id is None:
 		if category is not None:
 			catids  = []
-			for x in EventTable.categoryindex.query(category):
-				catids.append(x.id)
-			return get_batch_events(catids)	
+			x = EventTable.categoryindex.query(category)
+			print("Queried for "+ category)
+			for z in x:
+				catids.append(z.id)
+			print(catids)
+			return get_batch_events(catids)
 		if allEvents:
 			return eventstore.values()
 		events = []
@@ -523,10 +526,15 @@ class Query(graphene.ObjectType):
 			return get_airport(get_airport_id(iata))
 
 	@resolve_only_args
-	def resolve_events(self, category=None, required=False):
-		if category is None:
-			return get_event(None,category)
-		else:
-			return get_event(None,None)
+	def resolve_events(self, category=None, date=None, required=False):
+		if category is None and date is None:
+			return get_event(None,None, None)
+		else
+			if category is None and date is not None:
+				return get_event(None, None, date)
+			elif category is not None  and date is None:
+				return get_event(None, category, None)
+			else:
+				return get_event(None,category, date)
 
 schema=graphene.Schema(query=Query, mutation=Mutations)

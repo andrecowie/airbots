@@ -53,6 +53,22 @@ class LocationTable(Model):
      airports = UnicodeSetAttribute(null=True)
      events = UnicodeSetAttribute(null=True)
 
+class CategoryEventIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'category-index'
+             read_capacity_units = 1
+             write_capacity_units = 1
+             projection = KeysOnlyProjection()
+     category = UnicodeAttribute(hash_key=True)
+
+class DateEventIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'date-index'
+             read_capacity_units = 1
+             write_capacity_units = 1
+             projection = KeysOnlyProjection()
+     date = UnicodeAttribute(hash_key=True)
+
 class EventTable(Model):
     class Meta:
         table_name="events"
@@ -62,12 +78,14 @@ class EventTable(Model):
     url = UnicodeAttribute(null=True)
     time = UnicodeAttribute(null=True)
     date = UnicodeAttribute(null=True)
+    dateindex = DateEventIndex()
     country = UnicodeAttribute(null=True)
     city = UnicodeAttribute(null=True)
     latitude = UnicodeAttribute(null=True)
     longitude = UnicodeAttribute(null=True)
     venuename = UnicodeAttribute(null=True)
     category = UnicodeAttribute(null=True)
+    categoryindex = CategoryEventIndex()
     description = UnicodeAttribute(null=True)
 
 LocationTable._connection = LocationTable._get_connection()
@@ -120,6 +138,7 @@ def populate(increment, nz, nzcities):
             countriesUpdate[nz].append(eventid)
         eventitem = {'venuename':events['location']['name'],"longitude": str(events["location"]['point']['lng']),"latitude":str(events["location"]['point']['lat']),"category":events["category"]["name"],'city':cityid,"country":nz,"date":str(dt.date()), "time":str(dt.time()),"id": eventid, "name": events['name'], "url":events['url']}
         eventsToAdd.append(eventitem)
+
 def main(event, context):
     populate(event["increment"], event['nz'],event["nzcities"])
     for x in citiesToCreate:

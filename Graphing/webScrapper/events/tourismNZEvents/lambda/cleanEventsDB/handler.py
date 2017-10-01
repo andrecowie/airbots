@@ -59,6 +59,14 @@ class CategoryEventIndex(GlobalSecondaryIndex):
              projection = KeysOnlyProjection()
      category = UnicodeAttribute(hash_key=True)
 
+class DateEventIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'date-index'
+             read_capacity_units = 1
+             write_capacity_units = 1
+             projection = KeysOnlyProjection()
+     date = UnicodeAttribute(hash_key=True)
+
 class EventTable(Model):
     class Meta:
         table_name="events"
@@ -68,6 +76,7 @@ class EventTable(Model):
     url = UnicodeAttribute(null=True)
     time = UnicodeAttribute(null=True)
     date = UnicodeAttribute(null=True)
+    dateindex = DateEventIndex()
     country = UnicodeAttribute(null=True)
     city = UnicodeAttribute(null=True)
     latitude = UnicodeAttribute(null=True)
