@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "app_function": "app.app", 
+        "aws_region": "ap-southeast-2", 
+        "profile_name": "autrdproject", 
+        "s3_bucket": "zappa-apoqkqxw1",
+        "domain": "autairnewzealand.click",
+        "certificate_arn" : "arn:aws:acm:us-east-1:473620899854:certificate/b8d1e4ad-abad-4f00-ac04-28c3cf586487"
+    }
+}

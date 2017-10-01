@@ -77,6 +77,14 @@ class LocationTable(Model):
      airports = UnicodeSetAttribute(null=True)
      events = UnicodeSetAttribute(null=True)
 
+class CategoryEventIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'category-index'
+             read_capacity_units = 1
+             write_capacity_units = 1
+             projection = KeysOnlyProjection()
+     category = UnicodeAttribute(hash_key=True)
+
 class EventTable(Model):
     class Meta:
         table_name="events"
@@ -92,6 +100,7 @@ class EventTable(Model):
     longitude = UnicodeAttribute(null=True)
     venuename = UnicodeAttribute(null=True)
     category = UnicodeAttribute(null=True)
+    categoryindex = CategoryEventIndex()
     description = UnicodeAttribute(null=True)
 
 LocationTable._connection = LocationTable._get_connection()
@@ -107,6 +116,5 @@ EventTable._connection.connection._client = session.client('dynamodb', region_na
 if not LocationTable.exists() and not LocationTypeTable.exists():
     LocationTable.create_table(read_capacity_units=50, write_capacity_units=50, wait=True)
     LocationTypeTable.create_table(read_capacity_units=10, write_capacity_units=10, wait=True)
-    # insert_data()
 else:
     print("Tables Exist Doing Nothing")

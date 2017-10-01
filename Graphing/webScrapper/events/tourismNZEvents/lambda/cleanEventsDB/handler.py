@@ -51,6 +51,14 @@ class LocationTable(Model):
      airports = UnicodeSetAttribute(null=True)
      events = UnicodeSetAttribute(null=True)
 
+class CategoryEventIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'category-index'
+             read_capacity_units = 1
+             write_capacity_units = 1
+             projection = KeysOnlyProjection()
+     category = UnicodeAttribute(hash_key=True)
+
 class EventTable(Model):
     class Meta:
         table_name="events"
@@ -66,6 +74,7 @@ class EventTable(Model):
     longitude = UnicodeAttribute(null=True)
     venuename = UnicodeAttribute(null=True)
     category = UnicodeAttribute(null=True)
+    categoryindex = CategoryEventIndex()
     description = UnicodeAttribute(null=True)
 
 LocationTable._connection = LocationTable._get_connection()
