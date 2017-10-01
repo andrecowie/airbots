@@ -1,0 +1,11 @@
+.grid-main{
+  display: grid;
+  grid-template-columns: 4fr 8fr;
+  grid-template-rows: auto;
+  grid-template-areas:
+  "header content"
+  "footer content";
+}
+.grid-item-center{
+  grid-column-start: content;
+}
