@@ -4,6 +4,14 @@ from pynamodb.attributes import UnicodeAttribute, UnicodeSetAttribute, NumberAtt
 
 session = boto3.session.Session()
 
+class CategoryEventIndex(GlobalSecondaryIndex):
+     class Meta:
+             index_name = 'category-index'
+             read_capacity_units = 1
+             write_capacity_units = 1
+             projection = KeysOnlyProjection()
+     category = UnicodeAttribute(hash_key=True)
+
 class EventTable(Model):
     class Meta:
         table_name="events"
@@ -19,6 +27,7 @@ class EventTable(Model):
     longitude = UnicodeAttribute(null=True)
     venuename = UnicodeAttribute(null=True)
     category = UnicodeAttribute(null=True)
+	categoryindex = CategoryEventIndex()
     description = UnicodeAttribute(null=True)
 
 EventTable._connection = EventTable._get_connection()
