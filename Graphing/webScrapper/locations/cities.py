@@ -52,6 +52,7 @@ for x in countrieskeys:
         KeyConditionExpression=Key('name').eq(rangekey)
     )
     if res['Count'] > 0:
+        print("Uploading Places for "+rangekey)
         hashid = res['Items'][0]['id']
         placesIds = []
         putPlaces = []

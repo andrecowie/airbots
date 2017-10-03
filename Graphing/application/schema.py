@@ -1,6 +1,6 @@
 import graphene
 from graphene import resolve_only_args
-import uuid
+import uuid, json, boto3
 from models import LocationTypeTable, LocationTable, CityTable, AirportTable, EventTable
 
 continentstore = {}
@@ -133,6 +133,14 @@ class City(graphene.ObjectType):
 	def resolve_country(self, args, *_):
 		return get_country(self.country)
 
+class CityCountry(graphene.ObjectType):
+	city = graphene.Field(lambda: City)
+	country = graphene.Field(lambda: Country)
+	def resolve_city(self, args, *_):
+		return get_city(self.city)
+	def resolve_country(self, args, *_):
+		return get_country(self.country)
+
 class Airport(graphene.ObjectType):
 	"""Airports adding more. Will look to add airlines"""
 	class Meta:
@@ -198,14 +206,29 @@ def get_event(id=None, category=None, date=None):
 	global allEvents
 	global eventstore
 	if id is None:
-		if category is not None:
-			catids  = []
+		if category is not None and date is not None:
+			catids=[]
 			x = EventTable.categoryindex.query(category)
-			print("Queried for "+ category)
 			for z in x:
 				catids.append(z.id)
-			print(catids)
+			datids = []
+			x = EventTable.dateindex.query(date)
+			for z in x:
+				datids.append(z.id)
+			idstoget = list(set(datids).intersection(set(catids)))
+			return get_batch_events(idstoget)
+		elif category is not None and date is None:
+			catids  = []
+			x = EventTable.categoryindex.query(category)
+			for z in x:
+				catids.append(z.id)
 			return get_batch_events(catids)
+		elif category is None and date is not None:
+			datids = []
+			x = EventTable.dateindex.query(date)
+			for z in x:
+				datids.append(z.id)
+			return get_batch_events(datids)
 		if allEvents:
 			return eventstore.values()
 		events = []
@@ -489,6 +512,10 @@ class Mutations(graphene.ObjectType):
 	createCities = CreateCities.Field()
 	createCity = CreateCity.Field()
 
+class LatLngInput(graphene.InputObjectType):
+	latitude = graphene.Float()
+	longitude = graphene.Float()
+
 class Query(graphene.ObjectType):
 	'''A Base Query'''
 	countries=graphene.List(Country, name=graphene.String())
@@ -496,6 +523,7 @@ class Query(graphene.ObjectType):
 	cities=graphene.List(City, name=graphene.String())
 	airports=graphene.List(Airport, iata=graphene.String())
 	events=graphene.List(Event, city=graphene.String(),category=graphene.String(), date=graphene.String())
+	where =graphene.Field(CityCountry, latlng=LatLngInput())
 
 	@resolve_only_args
 	def resolve_countries(self, name=None):
@@ -529,12 +557,20 @@ class Query(graphene.ObjectType):
 	def resolve_events(self, category=None, date=None, required=False):
 		if category is None and date is None:
 			return get_event(None,None, None)
-		else
-			if category is None and date is not None:
+		elif category is None and date is not None:
 				return get_event(None, None, date)
-			elif category is not None  and date is None:
+		elif category is not None  and date is None:
 				return get_event(None, category, None)
-			else:
+		else:
 				return get_event(None,category, date)
+
+	@resolve_only_args
+	def resolve_where(self, latlng=None, required=True):
+		session = boto3.session.Session(profile_name='autrdproject')
+		# lambdaClient = boto3.client('lambda')
+		lambdaClient = session.client('lambda')
+		x = lambdaClient.invoke(FunctionName="reverseGeocode",InvocationType="RequestResponse", LogType="None", Payload=json.dumps({"latitude":str(latlng['latitude']), "longitude":str(latlng['longitude'])}))
+		x = json.loads(x['Payload'].read())
+		return CityCountry(city=x[1], country=x[0])
 
 schema=graphene.Schema(query=Query, mutation=Mutations)
