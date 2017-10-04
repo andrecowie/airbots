@@ -3,6 +3,10 @@ from graphene import resolve_only_args
 import uuid, json, boto3
 from models import LocationTypeTable, LocationTable, CityTable, AirportTable, EventTable
 
+# session = boto3.session.Session(profile_name='autrdproject')
+lambdaClient = boto3.client('lambda')
+# lambdaClient = session.client('lambda')
+
 continentstore = {}
 allContinents = False
 countrystore = {}
@@ -67,7 +71,14 @@ class Country(graphene.ObjectType):
 		if 'events' in self.__dict__:
 			if self.events is not None:
 				if len(self.events) > 0:
-					return get_batch_events(self.events)
+					if 'category' in args and 'date' in args:
+						return get_event(self.events, args['category'], args['date'])
+					elif 'category' not in args and 'date' in args:
+						return get_event(self.events,None, args['date'])
+					elif 'category' in args and 'date' not in args:
+						return get_event(self.events,args['category'], None)
+					else:
+						return get_event(self.events, None, None)
 				elif len(self.events) == 1:
 					return [get_event(self.events.pop())]
 		return []
@@ -109,12 +120,28 @@ class City(graphene.ObjectType):
 	airnzdestination = graphene.Field(lambda: graphene.Boolean)
 	airports = graphene.List(lambda: Airport)
 	country = graphene.Field(lambda: Country)
-	events = graphene.List(lambda: Event)
+	events = graphene.List(lambda: Event, category=graphene.String(), date=graphene.String())
+	eventful = graphene.List(lambda: Event, search=graphene.String())
+	def resolve_eventful(self, args, *_):
+		x = lambdaClient.invoke(FunctionName="eventfulApiCall",InvocationType="RequestResponse", LogType="None", Payload=json.dumps({"location":str(self.name), "search":args['search']}))
+		x = x['Payload'].read()
+		x = json.loads(x)
+		eventfulList = []
+		for z in x:
+			eventfulList.append(Event(id=z['id'], title=z['title'],description=z['description'],date=z['date'], time=z['time'], location=z['venuename'], category=args['search'], coordinates=LatLng(latitude=z['coordinates']['latitude'],longitude=z['coordinates']['longitude'])))
+		return eventfulList
 	def resolve_events(self, args, *_):
 		if 'events' in self.__dict__:
 			if self.events is not None:
 				if len(self.events) > 1:
-					return get_batch_events(self.events)
+					if 'category' in args and 'date' in args:
+						return get_event(self.events, args['category'], args['date'])
+					elif 'category' not in args and 'date' in args:
+						return get_event(self.events,None, args['date'])
+					elif 'category' in args and 'date' not in args:
+						return get_event(self.events,args['category'], None)
+					else:
+						return get_event(self.events, None, None)
 				elif len(self.events) == 1:
 					return [get_event(list(self.events)[0])]
 		return []
@@ -130,14 +157,6 @@ class City(graphene.ObjectType):
 				elif len(self.airports) == 1:
 					return [get_airport(list(self.airports)[0])]
 		return []
-	def resolve_country(self, args, *_):
-		return get_country(self.country)
-
-class CityCountry(graphene.ObjectType):
-	city = graphene.Field(lambda: City)
-	country = graphene.Field(lambda: Country)
-	def resolve_city(self, args, *_):
-		return get_city(self.city)
 	def resolve_country(self, args, *_):
 		return get_country(self.country)
 
@@ -169,6 +188,35 @@ class Airport(graphene.ObjectType):
 class LatLng(graphene.ObjectType):
 	latitude = graphene.Float()
 	longitude = graphene.Float()
+
+
+class Place(graphene.ObjectType):
+	name = graphene.String()
+	isopen = graphene.Boolean()
+	coordinates = graphene.Field(LatLng)
+	address = graphene.String()
+	rating = graphene.Field(graphene.Float)
+
+class CityCountryPlace(graphene.ObjectType):
+	city = graphene.Field(lambda: City)
+	country = graphene.Field(lambda: Country)
+	places = graphene.List(lambda: Place, radius=graphene.Int(), category=graphene.String())
+	def resolve_city(self, args, *_):
+		return get_city(self.city)
+	def resolve_country(self, args, *_):
+		return get_country(self.country)
+	def resolve_places(self, args, *_):
+		x = lambdaClient.invoke(FunctionName="placesApiCall",InvocationType="RequestResponse", LogType="None", Payload=json.dumps({"lat":str(self.places[0]), "lng":str(self.places[1]),"type":args['category'], "radius": str(args['radius'])}))
+		x = x['Payload'].read()
+		print(x)
+		x = json.loads(x)
+		placesArr = []
+		for z in x:
+			# print(type(1.2))
+			# print(type(z['rating']))
+			placesArr.append(Place(name=z['name'], isopen=z['open'] if 'open' in z else None, address=z['address'], rating=z['rating'] if 'rating' in z else None, coordinates=LatLng(latitude=float(z['lat']), longitude=float(z['lng']))))
+		return placesArr
+
 
 class Event(graphene.ObjectType):
 	"""Our Event Type To Explore in the the coming sprint"""
@@ -202,44 +250,59 @@ def get_batch_events(ids):
 			eventreturn.append(eventstore[x.id])
 	return eventreturn
 
+def get_event_id_by_category(category):
+	catids=[]
+	x = EventTable.categoryindex.query(category)
+	for z in x:
+		catids.append(z.id)
+	return catids
+
+def get_event_id_by_date(date):
+	datids = []
+	x = EventTable.dateindex.query(date)
+	for z in x:
+		datids.append(z.id)
+	return datids
+
 def get_event(id=None, category=None, date=None):
 	global allEvents
 	global eventstore
 	if id is None:
 		if category is not None and date is not None:
-			catids=[]
-			x = EventTable.categoryindex.query(category)
-			for z in x:
-				catids.append(z.id)
-			datids = []
-			x = EventTable.dateindex.query(date)
-			for z in x:
-				datids.append(z.id)
+			catids = get_event_id_by_category(category)
+			datids = get_event_id_by_date(date)
 			idstoget = list(set(datids).intersection(set(catids)))
 			return get_batch_events(idstoget)
 		elif category is not None and date is None:
-			catids  = []
-			x = EventTable.categoryindex.query(category)
-			for z in x:
-				catids.append(z.id)
-			return get_batch_events(catids)
+			return get_batch_events(get_event_id_by_category(category))
 		elif category is None and date is not None:
-			datids = []
-			x = EventTable.dateindex.query(date)
-			for z in x:
-				datids.append(z.id)
-			return get_batch_events(datids)
-		if allEvents:
-			return eventstore.values()
-		events = []
-		y = EventTable.scan()
-		for x in y:
-			eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description,date=x.date, time=x.time, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
-			events.append(eventstore[x.id])
-		allEvents = True
-		return events
+			return get_batch_events(get_event_id_by_date(date))
+		else:
+			if allEvents:
+				return eventstore.values()
+			events = []
+			y = EventTable.scan()
+			for x in y:
+				eventstore[x.id] =  Event(id=x.id, title=x.name,description=x.description,date=x.date, time=x.time, location=x.venuename, category=x.category, country=x.country, city=x.city, coordinates=LatLng(latitude=x.latitude, longitude=x.longitude))
+				events.append(eventstore[x.id])
+			allEvents = True
+			return events
 	else:
-		if id in eventstore.keys():
+		if isinstance(id, set):
+			if category is not None and date is not None:
+				catids = get_event_id_by_category(category)
+				datids = get_event_id_by_date(date)
+				idstoget = list(set(datids).intersection(set(catids)).intersection(set(id)))
+				return get_batch_events(idstoget)
+			elif category is not None and date is None:
+				idstoget = list(set(get_event_id_by_category(category)).intersection(set(id)))
+				return get_batch_events(idstoget)
+			elif category is None and date is not None:
+				idstoget = list(set(get_event_id_by_date(date)).intersection(set(id)))
+				return get_batch_events(get_event_id_by_date(date))
+			else:
+				return get_batch_events(id)
+		elif id in eventstore.keys():
 			return eventstore[id]
 		else:
 			y = EventTable.get(id)
@@ -516,14 +579,18 @@ class LatLngInput(graphene.InputObjectType):
 	latitude = graphene.Float()
 	longitude = graphene.Float()
 
+class Eventful(graphene.InputObjectType):
+	search = graphene.String()
+	location = graphene.String()
+
 class Query(graphene.ObjectType):
 	'''A Base Query'''
 	countries=graphene.List(Country, name=graphene.String())
 	continents=graphene.List(Continent, name=graphene.String())
 	cities=graphene.List(City, name=graphene.String())
 	airports=graphene.List(Airport, iata=graphene.String())
-	events=graphene.List(Event, city=graphene.String(),category=graphene.String(), date=graphene.String())
-	where =graphene.Field(CityCountry, latlng=LatLngInput())
+	events=graphene.List(Event, city=graphene.String(),category=graphene.String(), date=graphene.String(), eventful=Eventful())
+	where =graphene.Field(CityCountryPlace, latlng=LatLngInput())
 
 	@resolve_only_args
 	def resolve_countries(self, name=None):
@@ -554,23 +621,27 @@ class Query(graphene.ObjectType):
 			return get_airport(get_airport_id(iata))
 
 	@resolve_only_args
-	def resolve_events(self, category=None, date=None, required=False):
+	def resolve_events(self, category=None, date=None, eventful=None,required=False):
+		eventfulList=[]
+		if eventful:
+			x = lambdaClient.invoke(FunctionName="eventfulApiCall",InvocationType="RequestResponse", LogType="None", Payload=json.dumps({"location":str(eventful['location']), "search":str(eventful['search'])}))
+			x = x['Payload'].read()
+			x = json.loads(x)
+			for z in x:
+				eventfulList.append(Event(id=z['id'], title=z['title'],description=z['description'],date=z['date'], time=z['time'], location=z['venuename'], category=eventful['search'], coordinates=LatLng(latitude=z['coordinates']['latitude'],longitude=z['coordinates']['longitude'])))
 		if category is None and date is None:
-			return get_event(None,None, None)
+			return get_event(None,None, None)+eventfulList
 		elif category is None and date is not None:
-				return get_event(None, None, date)
+				return get_event(None, None, date)+eventfulList
 		elif category is not None  and date is None:
-				return get_event(None, category, None)
+				return get_event(None, category, None)+eventfulList
 		else:
-				return get_event(None,category, date)
+				return get_event(None,category, date)+eventfulList
 
 	@resolve_only_args
 	def resolve_where(self, latlng=None, required=True):
-		session = boto3.session.Session(profile_name='autrdproject')
-		# lambdaClient = boto3.client('lambda')
-		lambdaClient = session.client('lambda')
 		x = lambdaClient.invoke(FunctionName="reverseGeocode",InvocationType="RequestResponse", LogType="None", Payload=json.dumps({"latitude":str(latlng['latitude']), "longitude":str(latlng['longitude'])}))
 		x = json.loads(x['Payload'].read())
-		return CityCountry(city=x[1], country=x[0])
+		return CityCountryPlace(city=x[1], country=x[0], places=[latlng['latitude'],latlng['longitude']])
 
 schema=graphene.Schema(query=Query, mutation=Mutations)

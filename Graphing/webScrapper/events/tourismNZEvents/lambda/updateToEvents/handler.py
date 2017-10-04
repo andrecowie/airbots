@@ -45,10 +45,10 @@ EventTable._connection.connection._client = session.client('dynamodb', region_na
 def main(event, context):
 	if not EventTable.exists():
 		print("Creating table")
-		EventTable.create_table(read_capacity_units=1, write_capacity_units=5, wait=True)
+		EventTable.create_table(read_capacity_units=1, write_capacity_units=50, wait=True)
 	lambdaClient = boto3.client('lambda')
 	dynamodbClient = boto3.client('dynamodb')
-	url = 'http://api.eventfinda.co.nz/v2/events.json?rows=20&fields=event:(url,name,location,category,sessions),session:(timezone,datetime_start)&q=concert&order=popularity'
+	url = 'http://api.eventfinda.co.nz/v2/events.json?rows=20&fields=event:(url,name,location,category,sessions),session:(timezone,datetime_start)&order=popularity'
 	base64string = 'bmE1OjN4MjlqY3J2cHgyMg=='
 	req = requests.get(url, headers={"Authorization": "Basic "+base64string})
 	data = json.loads(req.text)

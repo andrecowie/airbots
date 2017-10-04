@@ -107,7 +107,7 @@ def populate(increment, nz, nzcities):
     for x in nzcities:
         cityNameToID[x['name']['S']] = x['id']['S']
     base64string = 'bmE1OjN4MjlqY3J2cHgyMg=='
-    url = 'http://api.eventfinda.co.nz/v2/events.json?rows=20&offset='+str(increment)+'&fields=event:(url,name,location,category,sessions),session:(timezone,datetime_start)&q=concert&order=popularity'
+    url = 'http://api.eventfinda.co.nz/v2/events.json?rows=20&offset='+str(increment)+'&fields=event:(url,name,location,category,sessions,description),session:(timezone,datetime_start)&order=popularity'
     req = requests.get(url, headers={"Authorization": "Basic "+base64string})
     data = json.loads(req.text)
     for events in data["events"]:
@@ -136,7 +136,7 @@ def populate(increment, nz, nzcities):
             countriesUpdate[nz] = [eventid]
         else:
             countriesUpdate[nz].append(eventid)
-        eventitem = {'venuename':events['location']['name'],"longitude": str(events["location"]['point']['lng']),"latitude":str(events["location"]['point']['lat']),"category":events["category"]["name"],'city':cityid,"country":nz,"date":str(dt.date()), "time":str(dt.time()),"id": eventid, "name": events['name'], "url":events['url']}
+        eventitem = {'description':events['description'].replace('\r', "").replace('\n', ""),'venuename':events['location']['name'],"longitude": str(events["location"]['point']['lng']),"latitude":str(events["location"]['point']['lat']),"category":events["category"]["name"],'city':cityid,"country":nz,"date":str(dt.date()), "time":str(dt.time()),"id": eventid, "name": events['name'], "url":events['url']}
         eventsToAdd.append(eventitem)
 
 def main(event, context):
@@ -144,7 +144,7 @@ def main(event, context):
     for x in citiesToCreate:
         CityTable(id=x['id'], name=x['name'], country=x['country']).save()
     for x in eventsToAdd:
-        EventTable(id=x['id'], name=x['name'], url=x['url'], time=x['time'], date=x['date'], country=x['country'], city=x['city'], latitude=x['latitude'], longitude=x['longitude'],venuename=x['venuename'], category=x['category']).save()
+        EventTable(id=x['id'], name=x['name'], url=x['url'], time=x['time'], date=x['date'], country=x['country'], city=x['city'], latitude=x['latitude'], longitude=x['longitude'],venuename=x['venuename'], category=x['category'], description=x['description']).save()
     for x in countriesUpdate.keys():
         LocationTable.get(x).update({'events':{'action':"ADD", "value": countriesUpdate[x]}})
     for x in citiesUpdate.keys():
