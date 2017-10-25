@@ -7,16 +7,16 @@ session = boto3.session.Session()
 class CategoryEventIndex(GlobalSecondaryIndex):
 	 class Meta:
 			 index_name = 'category-index'
-			 read_capacity_units = 1
-			 write_capacity_units = 1
+			 read_capacity_units = 5
+			 write_capacity_units = 5
 			 projection = KeysOnlyProjection()
 	 category = UnicodeAttribute(hash_key=True)
 
 class DateEventIndex(GlobalSecondaryIndex):
      class Meta:
              index_name = 'date-index'
-             read_capacity_units = 1
-             write_capacity_units = 1
+             read_capacity_units = 5
+             write_capacity_units = 5
              projection = KeysOnlyProjection()
      date = UnicodeAttribute(hash_key=True)
 
@@ -55,7 +55,9 @@ def main(event, context):
 	count = data['@attributes']['count']
 	increment = 0
 	nz = dynamodbClient.query(TableName='locations', IndexName="location-index", KeyConditionExpression="#S = :aus", ExpressionAttributeValues={":aus" : {'S':"New Zealand"}}, ExpressionAttributeNames={"#S": "name"})['Items'][0]['id']['S']
+	print(nz)
 	nzcities = dynamodbClient.get_item(TableName='locations', Key={'id':{'S':nz}}, AttributesToGet=['cities'])['Item']['cities']['SS']
+	print(nzcities)
 	nzcitiesbatchlook = []
 	for x in nzcities:
 		nzcitiesbatchlook.append({'id': {'S':x}})

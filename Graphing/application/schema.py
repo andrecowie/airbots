@@ -78,6 +78,7 @@ class Country(graphene.ObjectType):
 					elif 'category' in args and 'date' not in args:
 						return get_event(self.events,args['category'], None)
 					else:
+						print("Getting Country Events")
 						return get_event(self.events, None, None)
 				elif len(self.events) == 1:
 					return [get_event(self.events.pop())]
@@ -289,6 +290,7 @@ def get_event(id=None, category=None, date=None):
 			return events
 	else:
 		if isinstance(id, set):
+			print("ID is Set")
 			if category is not None and date is not None:
 				catids = get_event_id_by_category(category)
 				datids = get_event_id_by_date(date)
@@ -428,14 +430,15 @@ def get_country(id=None):
 		if allCountries:
 			return countrystore.values()
 		countries = []
-		clist = []
-		for x in LocationTypeTable.get(0).countries:
-			clist.append(x)
-		y = list(LocationTable.batch_get(clist))
+		# clist = []
+		# for x in LocationTypeTable.get(0).countries:
+		# 	clist.append(x)
+		y = LocationTable.scan()
 		allCountries=True
 		for z in y:
-			countrystore[z.id] = Country(id=z.id, name=z.name, airports=z.airports,population=z.population.replace(",", ""), continent=z.continent, cities=z.cities, events=z.events)
-			countries.append(countrystore[z.id])
+			if z.type == 'Country':
+				countrystore[z.id] = Country(id=z.id, name=z.name, airports=z.airports,population=z.population.replace(",", ""), continent=z.continent, cities=z.cities, events=z.events)
+				countries.append(countrystore[z.id])
 		return countries
 	elif id is not None:
 		if id in countrystore.keys():
@@ -455,21 +458,22 @@ def get_continent(id=None):
 		if allContinents:
 			return continentstore.values()
 		continents = []
-		clist = []
-		for x in LocationTypeTable.get(0).continents:
-			clist.append(x)
+		# clist = []
+		# for x in LocationTypeTable.get(0).continents:
+		# 	clist.append(x)
 		allContinents = True
-		y = list(LocationTable.batch_get(clist))
+		y = LocationTable.scan()
 		for z in y:
-			countri = []
-			if z.countries == set():
-				break
-			else:
-				if z.countries is not None:
-					for x in z.countries:
-						countri.append(x)
-			continentstore[z.id] = Continent(id=z.id, name=z.name, landsize=z.landsize, population=z.population, countries=countri)
-			continents.append(continentstore[z.id])
+			if z.type == 'Continent':
+				countri = []
+				if z.countries == set():
+					break
+				else:
+					if z.countries is not None:
+						for x in z.countries:
+							countri.append(x)
+				continentstore[z.id] = Continent(id=z.id, name=z.name, landsize=z.landsize, population=z.population, countries=countri)
+				continents.append(continentstore[z.id])
 		return continents
 	elif id is not None:
 		if id in continentstore.keys():
