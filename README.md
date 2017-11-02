@@ -1,6 +1,15 @@
-# airbots
+# R & D
 
-I have got the weather bot working to a basic degree on this branch will look to merge it prior to the mid project review document hand in on Monday 8th of May.
+This is the github repo for the AUT & Air New Zealand R & D Project.
 
-[Drive](https://drive.google.com/drive/folders/0B46_S_7Gl5_rTGlwYjUwTk5oOTQ?usp=sharing)
+Inside are a collection of scripts and programs which we have worked on over the year.
 
+The most notable programs exist inside of the Graphing/ directory as this is the directory where all of the software was placed in relation to our most up to date and final goals.
+
+Inside this folder there will be API keys and references to AWS credential files which are owned by one of the members of the project team.
+
+The main handover files exist inside of the Graphing/application Directory where the python graphql website lives.
+
+There is also a nodejs graphql implementation.
+A weather chatbot and a watson language translator chatbot.
+ParlAI is a open source tool created to help conversationalists build chatbot.
