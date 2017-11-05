@@ -1,30 +1,51 @@
 <!DOCTYPE html>
- <html>
-   <head>
-     <!--Import Google Icon Font-->
-     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-     <!--Import materialize.css-->
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-     <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
-     <!--Let browser know website is optimized for mobile-->
-     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-   </head>
+<html>
 
-   <body>
-     <div class="container">
-      <div class="item-header">
-         <h3 >Air New Zealand & AUT Project<p class="flow-text">Querying System for Location Information.</p></h3>
-      </div>
-      <div class="">
-      </div>
+<head>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
+    <!--Let browser know website is optimized for mobile-->
+    <title>R & D Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
 
-      <div class="item-d">
-         <a class="btn btn-large red waves-dark waves-effect" href="/graphql?query=%7B%0A%20%20continents%7B%0A%20%20%20%20name%0A%20%20%20%20countries%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D">APP</a>
-      </div>
+<body>
+    <div class="container">
+        <div class="item-header">
+            <h3>AUT & Air New Zealand Project<p class="flow-text">Querying System for Location Information.</p></h3>
+        </div>
+        <div class="row">
+            <form class="col s12">
+                <div class="row">
+                    <div class="col s12">
+                        Search for eventfinda events
+                        <div class="input-field inline">
+                            <input id="nzcity" type="text" class="autocomplete">
+                            <label for="nzcity" data-error="wrong" data-success="right">City</label>
+                        </div>
+                        <div class="input-field inline">
+                            <input id="nzcategory" type="text" class="autocomplete">
+                            <label for="nzcategory" data-error="wrong" data-success="right">Category</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
 
-     </div>
-     <!--Import jQuery before materialize.js-->
-     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-       <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-   </body>
- </html>
+        <div class="item-d">
+            <a class="btn btn-large red waves-dark waves-effect" href="/graphql?query=%7B%0A%20%20continents%7B%0A%20%20%20%20name%0A%20%20%20%20countries%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D">APP</a>
+        </div>
+
+    </div>
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery-ui.min.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/main.js')}}"></script>
+</body>
+
+</html>

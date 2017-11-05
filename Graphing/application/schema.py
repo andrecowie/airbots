@@ -3,9 +3,9 @@ from graphene import resolve_only_args
 import uuid, json, boto3
 from models import LocationTypeTable, LocationTable, CityTable, AirportTable, EventTable
 
-# session = boto3.session.Session(profile_name='autrdproject')
-lambdaClient = boto3.client('lambda')
-# lambdaClient = session.client('lambda')
+session = boto3.session.Session(profile_name='autrdproject')
+# lambdaClient = boto3.client('lambda')
+lambdaClient = session.client('lambda')
 
 continentstore = {}
 allContinents = False
@@ -129,6 +129,7 @@ class City(graphene.ObjectType):
 		x = json.loads(x)
 		eventfulList = []
 		for z in x:
+			print(z)
 			eventfulList.append(Event(id=z['id'], title=z['title'],description=z['description'],date=z['date'], time=z['time'], location=z['venuename'], category=args['search'], coordinates=LatLng(latitude=z['coordinates']['latitude'],longitude=z['coordinates']['longitude'])))
 		return eventfulList
 	def resolve_events(self, args, *_):
