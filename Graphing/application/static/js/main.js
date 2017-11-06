@@ -1,4 +1,34 @@
 $(document).ready(function() {
+  $.getJSON('graphql?query={%0A%09countries(name%3A"New Zealand"){%0A %09events{%0A category%0A }%0A%09}%0A}', function(catdata){
+    var allCategories = {};
+    catdata["data"]["countries"][0]["events"].forEach(function(item){
+      if(allCategories.hasOwnProperty(item)){
+      }else{
+        allCategories[item["category"]] = ""
+      }
+    });
+    $('#nzcategory').autocomplete({
+      data: allCategories,
+      limit: 5,
+      onAutocomplete: function(val) {
+        var container = document.getElementById('eventfindaresponses');
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+        $.getJSON('graphql?query={%0A events(category%3A "'+encodeURIComponent(val)+'"){%0A title%0A description%0A }%0A}', function(resdata){
+          var counter = 0;
+          console.log("got res");
+          resdata["data"]["events"].forEach(function(item){
+            if (counter < 4){
+              container.appendChild(eventcard(item));
+            }
+            counter++;
+          });
+        })
+      },
+        minLength: 1,
+    });
+  });
 
     $.getJSON('graphql?query=%7B%0A%0A%20%20%20%20countries(name%3A%20%22New%20Zealand%22)%7B%0A%20%20%20%20%09cities%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%09%0A%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%09%0A%20%20%20%20%7D%0A%0A%7D', function(data) {
         var nzcities = {};
@@ -7,9 +37,9 @@ $(document).ready(function() {
         });
         $('#nzcity').autocomplete({
             data: nzcities,
-            limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
+            limit: 5, // The max amount of results that can be shown at once. Default: Infinity.
             onAutocomplete: function(val) {
-                $.getJSON('graphql?query=%7B%0A%20%20countries(name%3A%20%22New%20Zealand%22)%20%7B%0A%20%20%20%20cities(name%3A%20%22' + val + '%22)%20%7B%0A%20%20%20%20%20%20events%20%7B%0A%20%20%20%20%20%20%20%20category%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A', function(cdata) {
+                $.getJSON('graphql?query=%7B%0A%20%20countries(name%3A%20%22New%20Zealand%22)%20%7B%0A%20%20%20%20cities(name%3A%20%22' + encodeURIComponent(val) + '%22)%20%7B%0A%20%20%20%20%20%20events%20%7B%0A%20%20%20%20%20%20%20%20category%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A', function(cdata) {
                     var currentCategories = {}
                     cdata["data"]["countries"][0]["cities"][0]["events"].forEach(function(item) {
                         currentCategories[item["category"]] = "";
@@ -25,16 +55,19 @@ $(document).ready(function() {
                             }
                             $.getJSON("graphql?query=%7B%0A%20%20countries(name%3A%20%22New%20Zealand%22)%20%7B%0A%20%20%20%20cities(name%3A%20%22"+encodeURIComponent(val)+"%22)%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%20%20events(category%3A%22"+encodeURIComponent(val2)+"%22)%7B%0A%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20location%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20date%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A", function(rdata) {
                                 console.log("got res");
+                                var counter = 0;
                                 rdata["data"]["countries"][0]["cities"][0]["events"].forEach(function(item){
-                                    console.log(item);
+                                  if (counter < 4){
                                     container.appendChild(eventcard(item));
+                                  }
+                                  counter++;
                                 });
                             })
                         },
                     });
                 });
             },
-            minLength: 2, // The minimum length of the input for the autocomplete to start. Default: 1.
+            minLength: 1, // The minimum length of the input for the autocomplete to start. Default: 1.
         });
 
     });
