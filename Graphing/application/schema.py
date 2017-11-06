@@ -3,9 +3,9 @@ from graphene import resolve_only_args
 import uuid, json, boto3
 from models import LocationTypeTable, LocationTable, CityTable, AirportTable, EventTable
 
-session = boto3.session.Session(profile_name='autrdproject')
-# lambdaClient = boto3.client('lambda')
-lambdaClient = session.client('lambda')
+# session = boto3.session.Session(profile_name='autrdproject')
+lambdaClient = boto3.client('lambda')
+# lambdaClient = session.client('lambda')
 
 continentstore = {}
 allContinents = False

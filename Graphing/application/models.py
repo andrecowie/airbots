@@ -6,8 +6,8 @@ import sys
 import os
 
 #Commenting out on master as they are my aws config :andre
-session = boto3.session.Session(profile_name='autrdproject')
-#session = boto3.session.Session()
+# session = boto3.session.Session(profile_name='autrdproject')
+session = boto3.session.Session()
 # client = boto3.client('dynamodb')
 
 class LocationTypeTable(Model):
